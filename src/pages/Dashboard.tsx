@@ -9,6 +9,7 @@ import { mockDevices, mockSimCards, mockUsers, mockActivations, mockTopups } fro
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [topupSearchTerm, setTopupSearchTerm] = useState("");
   const navigate = useNavigate();
 
   const activeDevices = mockDevices.filter(d => d.status === "1").length;
@@ -27,6 +28,12 @@ export default function Dashboard() {
     activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
     activation.phoneNumber.includes(searchTerm) ||
     activation.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const filteredTopups = mockTopups.filter(topup =>
+    topup.operator.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
+    topup.status.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
+    topup.user.includes(topupSearchTerm)
   );
 
   const stats = [
@@ -148,6 +155,58 @@ export default function Dashboard() {
                     />
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "قيد الانتظار..."}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>الشحنات الأخيرة</CardTitle>
+          <CardDescription>آخر عمليات شحن الرصيد</CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="ابحث بالمشغل، المستخدم، أو الحالة..."
+                value={topupSearchTerm}
+                onChange={(e) => setTopupSearchTerm(e.target.value)}
+                className="pr-10"
+              />
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>المعرف</TableHead>
+                <TableHead>التاريخ</TableHead>
+                <TableHead>المشغل</TableHead>
+                <TableHead>المبلغ</TableHead>
+                <TableHead>المستخدم</TableHead>
+                <TableHead>الرصيد الجديد</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الرسالة</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredTopups.slice(0, 10).map((topup: any) => (
+                <TableRow key={topup.id}>
+                  <TableCell className="font-medium">#{topup.id}</TableCell>
+                  <TableCell className="text-sm">{formatDate(topup.dateOperation)}</TableCell>
+                  <TableCell>{topup.operator}</TableCell>
+                  <TableCell className="font-mono">{topup.montant} درهم</TableCell>
+                  <TableCell className="font-mono text-xs">{topup.user.substring(0, 12)}...</TableCell>
+                  <TableCell className="font-mono">{topup.newBalance?.toFixed(3)} درهم</TableCell>
+                  <TableCell>
+                    <StatusBadge 
+                      status={topup.status.toLowerCase() as any} 
+                    />
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{topup.msgResponse || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
