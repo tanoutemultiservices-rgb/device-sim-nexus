@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -8,6 +9,7 @@ import { mockDevices, mockSimCards, mockUsers, mockActivations, mockTopups } fro
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
+  const navigate = useNavigate();
 
   const activeDevices = mockDevices.filter(d => d.status === "1").length;
   const activeSimCards = mockSimCards.filter(s => s.connected === "1").length;
@@ -33,42 +35,48 @@ export default function Dashboard() {
       value: `${activeDevices}/${mockDevices.length}`, 
       icon: Smartphone, 
       description: "الأجهزة المتصلة",
-      color: "text-primary"
+      color: "text-primary",
+      url: "/devices"
     },
     { 
       title: "بطاقات SIM النشطة", 
       value: `${activeSimCards}/${mockSimCards.length}`, 
       icon: CreditCard, 
       description: "البطاقات المتصلة",
-      color: "text-success"
+      color: "text-success",
+      url: "/sim-cards"
     },
     { 
       title: "إجمالي المستخدمين", 
       value: totalUsers, 
       icon: Users, 
       description: "المستخدمين المسجلين",
-      color: "text-accent"
+      color: "text-accent",
+      url: "/users"
     },
     { 
       title: "التفعيلات اليوم", 
       value: todayActivations, 
       icon: PlayCircle, 
       description: "تفعيل البطاقات",
-      color: "text-warning"
+      color: "text-warning",
+      url: "/activations"
     },
     { 
       title: "الشحنات اليوم", 
       value: todayTopups, 
       icon: Coins, 
       description: "إعادة الشحن",
-      color: "text-primary"
+      color: "text-primary",
+      url: "/topups"
     },
     { 
       title: "الرصيد الإجمالي", 
       value: `${totalBalance.toFixed(3)} درهم`, 
       icon: Activity, 
       description: "رصيد المستخدمين",
-      color: "text-success"
+      color: "text-success",
+      url: "/users"
     },
   ];
 
@@ -81,7 +89,12 @@ export default function Dashboard() {
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {stats.map((stat, index) => (
-          <Card key={stat.title} className="hover:shadow-lg transition-all duration-200 animate-fade-in" style={{ animationDelay: `${index * 50}ms` }}>
+          <Card 
+            key={stat.title} 
+            className="hover:shadow-lg transition-all duration-200 animate-fade-in cursor-pointer" 
+            style={{ animationDelay: `${index * 50}ms` }}
+            onClick={() => navigate(stat.url)}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
               <stat.icon className={`h-4 w-4 ${stat.color}`} />
