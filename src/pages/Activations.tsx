@@ -1,14 +1,25 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mockActivations } from "@/lib/mockData";
-import { PlayCircle } from "lucide-react";
+import { PlayCircle, Search } from "lucide-react";
 
 export default function Activations() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const formatDate = (timestamp: number) => {
     if (timestamp === 0) return "N/A";
     return new Date(timestamp).toLocaleString();
   };
+
+  const filteredActivations = mockActivations.filter(activation =>
+    activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    activation.phoneNumber.includes(searchTerm) ||
+    activation.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    activation.user.includes(searchTerm)
+  );
 
   return (
     <div className="space-y-6">
@@ -24,6 +35,17 @@ export default function Activations() {
         <CardHeader>
           <CardTitle>Activation History</CardTitle>
           <CardDescription>All SIM card activation attempts and results</CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by operator, phone, user, or status..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -40,7 +62,7 @@ export default function Activations() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockActivations.map((activation) => (
+              {filteredActivations.map((activation) => (
                 <TableRow key={activation.id}>
                   <TableCell className="font-medium">#{activation.id}</TableCell>
                   <TableCell className="text-sm">{formatDate(activation.dateOperation)}</TableCell>

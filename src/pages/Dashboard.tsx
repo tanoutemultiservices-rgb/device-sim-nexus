@@ -1,14 +1,31 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Smartphone, CreditCard, Users, PlayCircle, Coins, Activity } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { StatusBadge } from "@/components/StatusBadge";
+import { Smartphone, CreditCard, Users, PlayCircle, Coins, Activity, Search } from "lucide-react";
 import { mockDevices, mockSimCards, mockUsers, mockActivations, mockTopups } from "@/lib/mockData";
 
 export default function Dashboard() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const activeDevices = mockDevices.filter(d => d.status === "1").length;
   const activeSimCards = mockSimCards.filter(s => s.connected === "1").length;
   const totalUsers = mockUsers.length;
   const todayActivations = mockActivations.length;
   const todayTopups = mockTopups.length;
   const totalBalance = mockUsers.reduce((sum, user) => sum + user.balance, 0);
+
+  const formatDate = (timestamp: number) => {
+    if (timestamp === 0) return "N/A";
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const filteredActivations = mockActivations.filter(activation =>
+    activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    activation.phoneNumber.includes(searchTerm) ||
+    activation.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const stats = [
     { 
@@ -77,67 +94,53 @@ export default function Dashboard() {
         ))}
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>System Overview</CardTitle>
-            <CardDescription>Current operational status</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Device Utilization</span>
-              <span className="text-sm font-medium">{((activeDevices / mockDevices.length) * 100).toFixed(0)}%</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div 
-                className="bg-primary h-2 rounded-full transition-all" 
-                style={{ width: `${(activeDevices / mockDevices.length) * 100}%` }}
+      <Card>
+        <CardHeader>
+          <CardTitle>Recent Activations</CardTitle>
+          <CardDescription>Latest SIM card activation operations</CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by operator, phone, or status..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
               />
             </div>
-            
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">SIM Card Utilization</span>
-              <span className="text-sm font-medium">{((activeSimCards / mockSimCards.length) * 100).toFixed(0)}%</span>
-            </div>
-            <div className="w-full bg-secondary rounded-full h-2">
-              <div 
-                className="bg-success h-2 rounded-full transition-all" 
-                style={{ width: `${(activeSimCards / mockSimCards.length) * 100}%` }}
-              />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Recent Activity</CardTitle>
-            <CardDescription>Latest operations</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-start gap-3">
-              <PlayCircle className="h-5 w-5 text-warning mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">SIM Activation</p>
-                <p className="text-xs text-muted-foreground">Phone: 654166466 - Status: Accepted</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Coins className="h-5 w-5 text-success mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Credit Top-up</p>
-                <p className="text-xs text-muted-foreground">Amount: 5 MAD - Status: Completed</p>
-              </div>
-            </div>
-            <div className="flex items-start gap-3">
-              <Smartphone className="h-5 w-5 text-primary mt-0.5" />
-              <div className="flex-1">
-                <p className="text-sm font-medium">Device Connected</p>
-                <p className="text-xs text-muted-foreground">A12 de Ben Dahmane - Online</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>ID</TableHead>
+                <TableHead>Date</TableHead>
+                <TableHead>Operator</TableHead>
+                <TableHead>Phone Number</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Message</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredActivations.slice(0, 10).map((activation) => (
+                <TableRow key={activation.id}>
+                  <TableCell className="font-medium">#{activation.id}</TableCell>
+                  <TableCell className="text-sm">{formatDate(activation.dateOperation)}</TableCell>
+                  <TableCell>{activation.operator}</TableCell>
+                  <TableCell className="font-mono">{activation.phoneNumber}</TableCell>
+                  <TableCell>
+                    <StatusBadge 
+                      status={activation.status.toLowerCase() as any} 
+                    />
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "Pending..."}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

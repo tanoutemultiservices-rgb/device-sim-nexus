@@ -1,18 +1,25 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
-import { mockSimCards } from "@/lib/mockData";
-import { CreditCard, Power, PowerOff } from "lucide-react";
+import { mockSimCards, mockDevices } from "@/lib/mockData";
+import { CreditCard, Power, PowerOff, Search } from "lucide-react";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
 export default function SimCards() {
   const [simCards, setSimCards] = useState(mockSimCards);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
+  };
+
+  const getDeviceName = (deviceId: string) => {
+    const device = mockDevices.find(d => d.id === deviceId);
+    return device ? device.name : "Unknown Device";
   };
 
   const toggleSimStatus = (simId: number, type: "activation" | "topup") => {
@@ -40,6 +47,12 @@ export default function SimCards() {
     }));
   };
 
+  const filteredSimCards = simCards.filter(sim =>
+    sim.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    sim.number.includes(searchTerm) ||
+    getDeviceName(sim.device).toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -56,6 +69,17 @@ export default function SimCards() {
           <CardDescription>
             Each SIM card can execute up to 20 successful activation operations per day
           </CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by operator, number, or device..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -64,6 +88,7 @@ export default function SimCards() {
                 <TableHead>ID</TableHead>
                 <TableHead>Operator</TableHead>
                 <TableHead>Number</TableHead>
+                <TableHead>Device Name</TableHead>
                 <TableHead>Today Operations</TableHead>
                 <TableHead>Balance (MAD)</TableHead>
                 <TableHead>Connection</TableHead>
@@ -72,11 +97,12 @@ export default function SimCards() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {simCards.map((sim) => (
+              {filteredSimCards.map((sim) => (
                 <TableRow key={sim.id}>
                   <TableCell className="font-medium">#{sim.id}</TableCell>
                   <TableCell>{sim.operator}</TableCell>
                   <TableCell className="font-mono">{sim.number}</TableCell>
+                  <TableCell className="text-sm">{getDeviceName(sim.device)}</TableCell>
                   <TableCell>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">

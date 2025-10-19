@@ -1,14 +1,16 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mockDevices } from "@/lib/mockData";
-import { Power, PowerOff, Smartphone } from "lucide-react";
+import { Power, PowerOff, Smartphone, Search } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Devices() {
   const [devices, setDevices] = useState(mockDevices);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
@@ -29,6 +31,13 @@ export default function Devices() {
     }));
   };
 
+  const filteredDevices = devices.filter(device =>
+    device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.os.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.ip.includes(searchTerm)
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -45,6 +54,17 @@ export default function Devices() {
           <CardDescription>
             Each device can have up to 2 SIM cards. Deactivating a device automatically deactivates all its SIM cards.
           </CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by name, brand, OS, or IP..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -61,7 +81,7 @@ export default function Devices() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {devices.map((device) => (
+              {filteredDevices.map((device) => (
                 <TableRow key={device.id}>
                   <TableCell className="font-medium">{device.name}</TableCell>
                   <TableCell>{device.brand}</TableCell>

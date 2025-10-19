@@ -1,10 +1,41 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mockUsers } from "@/lib/mockData";
-import { Users as UsersIcon } from "lucide-react";
+import { Users as UsersIcon, Search, Power, PowerOff } from "lucide-react";
+import { toast } from "sonner";
 
 export default function Users() {
+  const [users, setUsers] = useState(mockUsers);
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const toggleUserStatus = (userId: string) => {
+    setUsers(prev => prev.map(user => {
+      if (user.id === userId) {
+        const newStatus = user.status === "ACCEPT" ? "BLOCK" : "ACCEPT";
+        toast.success(
+          newStatus === "ACCEPT" 
+            ? `User ${user.username} enabled` 
+            : `User ${user.username} disabled`
+        );
+        return { ...user, status: newStatus };
+      }
+      return user;
+    }));
+  };
+
+  const filteredUsers = users.filter(user =>
+    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.tel.includes(searchTerm)
+  );
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -19,6 +50,17 @@ export default function Users() {
         <CardHeader>
           <CardTitle>Registered Users</CardTitle>
           <CardDescription>All customer accounts in the system</CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by username, name, email, or phone..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -29,19 +71,24 @@ export default function Users() {
                 <TableHead>Email</TableHead>
                 <TableHead>Phone</TableHead>
                 <TableHead>Balance (MAD)</TableHead>
-                <TableHead>Device ID</TableHead>
+                <TableHead>Role</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockUsers.map((user) => (
+              {filteredUsers.map((user) => (
                 <TableRow key={user.id}>
                   <TableCell className="font-medium">{user.username}</TableCell>
                   <TableCell>{`${user.prenom} ${user.nom}`}</TableCell>
                   <TableCell>{user.email}</TableCell>
                   <TableCell className="font-mono">{user.tel}</TableCell>
                   <TableCell className="font-mono">{user.balance.toFixed(3)}</TableCell>
-                  <TableCell className="font-mono text-xs">{user.device.substring(0, 16)}...</TableCell>
+                  <TableCell>
+                    <Badge variant={user.role === "admin" ? "default" : "secondary"}>
+                      {user.role}
+                    </Badge>
+                  </TableCell>
                   <TableCell>
                     <StatusBadge 
                       status={
@@ -50,6 +97,19 @@ export default function Users() {
                         "blocked"
                       } 
                     />
+                  </TableCell>
+                  <TableCell>
+                    <Button
+                      size="sm"
+                      variant={user.status === "ACCEPT" ? "destructive" : "default"}
+                      onClick={() => toggleUserStatus(user.id)}
+                    >
+                      {user.status === "ACCEPT" ? (
+                        <PowerOff className="h-4 w-4" />
+                      ) : (
+                        <Power className="h-4 w-4" />
+                      )}
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

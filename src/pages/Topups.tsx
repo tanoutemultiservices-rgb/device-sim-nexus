@@ -1,13 +1,24 @@
+import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { mockTopups } from "@/lib/mockData";
-import { Coins } from "lucide-react";
+import { Coins, Search } from "lucide-react";
 
 export default function Topups() {
+  const [searchTerm, setSearchTerm] = useState("");
+
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString();
   };
+
+  const filteredTopups = mockTopups.filter(topup =>
+    topup.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    topup.phoneNumber.includes(searchTerm) ||
+    topup.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    topup.user.includes(searchTerm)
+  );
 
   return (
     <div className="space-y-6">
@@ -23,6 +34,17 @@ export default function Topups() {
         <CardHeader>
           <CardTitle>Top-up History</CardTitle>
           <CardDescription>All mobile credit recharge transactions</CardDescription>
+          <div className="mt-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Search by operator, phone, user, or status..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <Table>
@@ -40,7 +62,7 @@ export default function Topups() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {mockTopups.map((topup) => (
+              {filteredTopups.map((topup) => (
                 <TableRow key={topup.id}>
                   <TableCell className="font-medium">#{topup.id}</TableCell>
                   <TableCell className="text-sm">{formatDate(topup.dateOperation)}</TableCell>

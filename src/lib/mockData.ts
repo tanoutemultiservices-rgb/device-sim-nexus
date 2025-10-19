@@ -107,6 +107,7 @@ export const mockUsers = [
     status: "ACCEPT",
     balance: 0.000,
     device: "1505ae2fee7d00aa",
+    role: "admin",
   },
   {
     id: "2f37396e5b991337",
@@ -118,6 +119,7 @@ export const mockUsers = [
     status: "ACCEPT",
     balance: 1.300,
     device: "2f37396e5b991337",
+    role: "user",
   },
 ];
 
