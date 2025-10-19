@@ -3,7 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, Wallet } from "lucide-react";
+import { User, Mail, Phone, Wallet, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { usersApi } from "@/services/api";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,12 +11,18 @@ import { useAuth } from "@/contexts/AuthContext";
 export default function Profile() {
   const { user: currentUser, login } = useAuth();
   const [saving, setSaving] = useState(false);
+  const [savingPassword, setSavingPassword] = useState(false);
   const [formData, setFormData] = useState({
     USERNAME: currentUser?.USERNAME || "",
     NOM: currentUser?.NOM || "",
     PRENOM: currentUser?.PRENOM || "",
     EMAIL: currentUser?.EMAIL || "",
     TEL: currentUser?.TEL || "",
+  });
+  const [passwordData, setPasswordData] = useState({
+    currentPassword: "",
+    newPassword: "",
+    confirmPassword: "",
   });
 
   useEffect(() => {
@@ -33,6 +39,13 @@ export default function Profile() {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData(prev => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+
+  const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPasswordData(prev => ({
       ...prev,
       [e.target.name]: e.target.value,
     }));
@@ -73,6 +86,69 @@ export default function Profile() {
       toast.error("حدث خطأ أثناء تحديث الملف الشخصي");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!currentUser) {
+      toast.error("لم يتم العثور على بيانات المستخدم");
+      return;
+    }
+
+    // Validate current password
+    if (passwordData.currentPassword !== currentUser.PASSWORD) {
+      toast.error("كلمة المرور الحالية غير صحيحة");
+      return;
+    }
+
+    // Validate new password
+    if (passwordData.newPassword.length < 6) {
+      toast.error("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل");
+      return;
+    }
+
+    // Validate password match
+    if (passwordData.newPassword !== passwordData.confirmPassword) {
+      toast.error("كلمة المرور الجديدة غير متطابقة");
+      return;
+    }
+
+    setSavingPassword(true);
+    
+    try {
+      await usersApi.update({
+        ID: currentUser.ID,
+        USERNAME: currentUser.USERNAME,
+        NOM: currentUser.NOM,
+        PRENOM: currentUser.PRENOM,
+        EMAIL: currentUser.EMAIL,
+        TEL: currentUser.TEL,
+        PASSWORD: passwordData.newPassword,
+        STATUS: currentUser.STATUS,
+        BALANCE: currentUser.BALANCE,
+        DEVICE: currentUser.DEVICE,
+        ROLE: currentUser.ROLE,
+      });
+      
+      toast.success("تم تحديث كلمة المرور بنجاح");
+      
+      // Clear password fields
+      setPasswordData({
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
+      
+      // Refresh user data
+      await login(currentUser.ID);
+      
+    } catch (error) {
+      console.error('Error updating password:', error);
+      toast.error("حدث خطأ أثناء تحديث كلمة المرور");
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -246,6 +322,75 @@ export default function Profile() {
               disabled={saving}
             >
               {saving ? "جاري الحفظ..." : "حفظ التغييرات"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+
+      {/* Password Change Form */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Lock className="h-5 w-5" />
+            تغيير كلمة المرور
+          </CardTitle>
+          <CardDescription>قم بتحديث كلمة المرور الخاصة بك</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={handlePasswordSubmit} className="space-y-6">
+            <div className="space-y-4">
+              {/* Current Password */}
+              <div className="space-y-2">
+                <Label htmlFor="currentPassword">كلمة المرور الحالية</Label>
+                <Input
+                  id="currentPassword"
+                  name="currentPassword"
+                  type="password"
+                  value={passwordData.currentPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="أدخل كلمة المرور الحالية"
+                  required
+                />
+              </div>
+
+              {/* New Password */}
+              <div className="space-y-2">
+                <Label htmlFor="newPassword">كلمة المرور الجديدة</Label>
+                <Input
+                  id="newPassword"
+                  name="newPassword"
+                  type="password"
+                  value={passwordData.newPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="أدخل كلمة المرور الجديدة (6 أحرف على الأقل)"
+                  required
+                  minLength={6}
+                />
+              </div>
+
+              {/* Confirm Password */}
+              <div className="space-y-2">
+                <Label htmlFor="confirmPassword">تأكيد كلمة المرور الجديدة</Label>
+                <Input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type="password"
+                  value={passwordData.confirmPassword}
+                  onChange={handlePasswordChange}
+                  placeholder="أعد إدخال كلمة المرور الجديدة"
+                  required
+                  minLength={6}
+                />
+              </div>
+            </div>
+
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full"
+              disabled={savingPassword}
+            >
+              {savingPassword ? "جاري التحديث..." : "تحديث كلمة المرور"}
             </Button>
           </form>
         </CardContent>
