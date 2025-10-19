@@ -117,7 +117,7 @@ export default function ActivationRequest() {
             {/* PUK Code */}
             <div className="space-y-2">
               <Label htmlFor="puk" className="text-base font-semibold">
-                رمز PUK (4 أرقام)
+                اربع الارقام الاخيرة من رمز PUK
               </Label>
               <Input
                 id="puk"
@@ -133,7 +133,7 @@ export default function ActivationRequest() {
             </div>
 
             {/* Visual PUK Display */}
-            <div style={{ display: 'none' }} className="flex justify-center gap-3 py-4">
+            <div style={{ display: "none" }} className="flex justify-center gap-3 py-4">
               {[0, 1, 2, 3].map((index) => (
                 <div
                   key={index}
