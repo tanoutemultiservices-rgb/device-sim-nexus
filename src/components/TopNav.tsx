@@ -70,7 +70,7 @@ export function TopNav() {
             <Coins className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground">الرصيد</span>
-              <span className="text-sm font-bold text-foreground">{user.BALANCE?.toFixed(2)} درهم</span>
+              <span className="text-sm font-bold text-foreground">{Number(user.BALANCE || 0).toFixed(2)} درهم</span>
             </div>
           </div>
         )}
