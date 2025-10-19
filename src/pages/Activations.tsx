@@ -161,6 +161,7 @@ export default function Activations() {
                 <TableHead>التاريخ</TableHead>
                 <TableHead>المشغل</TableHead>
                 <TableHead>رقم الهاتف</TableHead>
+                <TableHead>كود USSD</TableHead>
                 <TableHead>المستخدم</TableHead>
                 <TableHead>تاريخ الرد</TableHead>
                 <TableHead>الحالة</TableHead>
@@ -168,12 +169,13 @@ export default function Activations() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredActivations.map((activation) => (
+              {filteredActivations.map((activation: any) => (
                 <TableRow key={activation.id}>
                   <TableCell className="font-medium">#{activation.id}</TableCell>
                   <TableCell className="text-sm">{formatDate(activation.dateOperation)}</TableCell>
                   <TableCell>{activation.operator}</TableCell>
                   <TableCell className="font-mono">{activation.phoneNumber}</TableCell>
+                  <TableCell className="font-mono text-sm text-primary">{activation.ussdCode || "N/A"}</TableCell>
                   <TableCell className="font-mono text-xs">{activation.user.substring(0, 12)}...</TableCell>
                   <TableCell className="text-sm">{formatDate(activation.dateResponse)}</TableCell>
                   <TableCell>
