@@ -129,17 +129,7 @@ export default function Activations() {
           </CardContent>
         </Card>
         
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">معلقة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning">
-              {filteredActivations.filter(a => a.STATUS === "PENDING").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">بانتظار الرد</p>
-          </CardContent>
-        </Card>
+        
       </div>
 
       <div className="flex items-center justify-between">
