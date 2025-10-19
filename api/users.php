@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE FROM USER WHERE ID = :id";
+        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE, TOPUP, ACTIVATION FROM USER WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         $stmt->execute();
@@ -26,7 +26,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "User not found"]);
         }
     } else {
-        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE FROM USER ORDER BY USERNAME";
+        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE, TOPUP, ACTIVATION FROM USER ORDER BY USERNAME";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -76,7 +76,7 @@ else if ($method === 'PUT') {
         $query = "UPDATE USER 
                   SET USERNAME = :username, NOM = :nom, PRENOM = :prenom, TEL = :tel,
                       EMAIL = :email, PASSWORD = :password, STATUS = :status, BALANCE = :balance,
-                      DEVICE = :device, ROLE = :role
+                      DEVICE = :device, ROLE = :role, TOPUP = :topup, ACTIVATION = :activation
                   WHERE ID = :id";
         
         $stmt = $db->prepare($query);
@@ -91,6 +91,10 @@ else if ($method === 'PUT') {
         $stmt->bindParam(":balance", $data->BALANCE);
         $stmt->bindParam(":device", $data->DEVICE);
         $stmt->bindParam(":role", $data->ROLE);
+        $topup = isset($data->TOPUP) ? $data->TOPUP : 0;
+        $activation = isset($data->ACTIVATION) ? $data->ACTIVATION : 0;
+        $stmt->bindParam(":topup", $topup);
+        $stmt->bindParam(":activation", $activation);
         
         if ($stmt->execute()) {
             echo json_encode(["message" => "User updated successfully"]);

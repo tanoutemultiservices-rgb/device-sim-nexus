@@ -13,6 +13,8 @@ interface User {
   BALANCE: number;
   DEVICE: string;
   ROLE: 'ADMIN' | 'EXECUTOR' | 'CUSTOMER' | 'CUSTMER'; // CUSTMER is a database typo
+  TOPUP: number;
+  ACTIVATION: number;
 }
 
 interface AuthContextType {

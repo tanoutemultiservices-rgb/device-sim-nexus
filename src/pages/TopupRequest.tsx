@@ -70,6 +70,12 @@ export default function TopupRequest() {
       return;
     }
 
+    // Check if user has topup permission
+    if (currentUser.TOPUP !== 1 && currentUser.TOPUP !== '1') {
+      toast.error("ليس لديك صلاحية لطلب الشحن");
+      return;
+    }
+
     // Check user balance
     const amount = parseFloat(selectedAmount);
     if (currentUser.BALANCE < amount) {

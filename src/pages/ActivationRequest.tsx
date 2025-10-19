@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,12 +6,13 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PlayCircle } from "lucide-react";
 import { toast } from "sonner";
+import { simCardsApi, activationsApi, usersApi } from "@/services/api";
 import marocTelecomLogo from "@/assets/maroc-telecom-logo.png";
 import inwiLogo from "@/assets/inwi-logo.jpg";
 import orangeLogo from "@/assets/orange-logo.png";
 const operators = [
   {
-    id: "maroc-telecom",
+    id: "Maroc Telecom",
     name: "Maroc Telecom",
     logo: marocTelecomLogo,
   },
@@ -21,7 +22,7 @@ const operators = [
     logo: inwiLogo,
   },
   {
-    id: "orange",
+    id: "Orange MA",
     name: "Orange MA",
     logo: orangeLogo,
   },
@@ -31,6 +32,57 @@ export default function ActivationRequest() {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [pukCode, setPukCode] = useState("");
   const [loading, setLoading] = useState(false);
+  const [simCards, setSimCards] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [currentUser, setCurrentUser] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [simData, userData] = await Promise.all([simCardsApi.getAll(), usersApi.getAll()]);
+        setSimCards(simData as any[]);
+        setUsers(userData as any[]);
+
+        // Get first active user for demo (in production, use authentication)
+        const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
+        setCurrentUser(activeUser);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        toast.error("خطأ في تحميل البيانات");
+      }
+    };
+    fetchData();
+  }, []);
+  const pollActivationStatus = async (activationId: number): Promise<void> => {
+    return new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        try {
+          const activation = await activationsApi.getById(activationId) as any;
+          
+          if (activation.MSG_TO_RETURN && activation.MSG_TO_RETURN.trim() !== '') {
+            clearInterval(interval);
+            
+            if (activation.STATUS === 'SUCCESS') {
+              toast.success(activation.MSG_TO_RETURN);
+            } else {
+              toast.error(activation.MSG_TO_RETURN);
+            }
+            resolve();
+          }
+        } catch (error) {
+          console.error('Error polling activation:', error);
+        }
+      }, 2000); // Poll every 2 seconds
+
+      // Timeout after 60 seconds
+      setTimeout(() => {
+        clearInterval(interval);
+        toast.error("انتهت مهلة الانتظار. يرجى التحقق من حالة الطلب لاحقاً");
+        resolve();
+      }, 60000);
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOperator) {
@@ -45,17 +97,90 @@ export default function ActivationRequest() {
       toast.error("الرجاء إدخال رمز PUK المكون من 4 أرقام");
       return;
     }
-    setLoading(true);
 
-    // Simulate API call
-    setTimeout(() => {
-      toast.success("تم إرسال طلب التفعيل بنجاح");
-      setLoading(false);
+    if (!currentUser) {
+      toast.error("لم يتم العثور على المستخدم");
+      return;
+    }
+
+    // Check if user has activation permission
+    if (currentUser.ACTIVATION !== 1 && currentUser.ACTIVATION !== '1') {
+      toast.error("ليس لديك صلاحية لطلب التفعيل");
+      return;
+    }
+
+    // Check user balance (activation costs 1 dirham)
+    const activationCost = 1;
+    if (currentUser.BALANCE < activationCost) {
+      toast.error(`رصيدك غير كافٍ. رصيدك الحالي: ${currentUser.BALANCE} درهم`);
+      return;
+    }
+
+    // Find available SIM card with same operator and activation enabled
+    const availableSim = simCards.find((sim: any) => sim.OPERATOR === selectedOperator && sim.ACTIVATION_STATUS === '1');
+    if (!availableSim) {
+      toast.error(`لا توجد بطاقة SIM متاحة لشركة ${selectedOperator}`);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      // Build CODE_USSD based on operator
+      let codeUSSD = "";
+      if (selectedOperator === "Orange MA") {
+        codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
+      } else if (selectedOperator === "inwi") {
+        codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
+      } else if (selectedOperator === "Maroc Telecom") {
+        codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
+      }
+
+      // Create activation request
+      const activationData = {
+        DATE_OPERATION: Date.now(),
+        OPERATOR: selectedOperator,
+        SERIE: '',
+        PHONE_NUMBER: phoneNumber,
+        PUK: pukCode,
+        CODE_USSD: codeUSSD,
+        DATE_RESPONSE: 0,
+        MSG_RESPONSE: '',
+        STATUS: 'PENDING',
+        USER: currentUser.ID,
+        SIM_CARD: availableSim.ID,
+        MSG_TO_RETURN: ''
+      };
+      
+      const response = await activationsApi.create(activationData) as any;
+      const activationId = response.id;
+
+      // Update user balance
+      const updatedBalance = parseFloat(currentUser.BALANCE) - activationCost;
+      await usersApi.update({
+        ...currentUser,
+        BALANCE: updatedBalance
+      });
+
+      toast.info("جاري معالجة طلب التفعيل...");
+
       // Reset form
       setSelectedOperator("");
       setPhoneNumber("");
       setPukCode("");
-    }, 1500);
+
+      // Poll for activation result
+      await pollActivationStatus(activationId);
+
+      // Refresh user data
+      const userData = await usersApi.getAll();
+      const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
+      setCurrentUser(activeUser);
+    } catch (error) {
+      console.error('Error submitting activation:', error);
+      toast.error("حدث خطأ أثناء إرسال الطلب");
+    } finally {
+      setLoading(false);
+    }
   };
   const handlePukChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value.replace(/\D/g, "").slice(0, 4);
