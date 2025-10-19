@@ -1,18 +1,23 @@
-import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, Plus, LogOut, UserCircle } from "lucide-react";
+import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, Plus, LogOut, UserCircle, History } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 
 const menuItems = [
+  // Admin menu items
   { title: "لوحة التحكم", url: "/", icon: LayoutDashboard, roles: ['ADMIN'] },
   { title: "الأجهزة", url: "/devices", icon: Smartphone, roles: ['ADMIN'] },
   { title: "بطاقات SIM", url: "/sim-cards", icon: CreditCard, roles: ['ADMIN'] },
   { title: "المستخدمون", url: "/users", icon: Users, roles: ['ADMIN'] },
-  { title: "التفعيلات", url: "/activations", icon: PlayCircle, roles: ['ADMIN', 'CUSTOMER'] },
-  { title: "الشحنات", url: "/topups", icon: Coins, roles: ['ADMIN', 'CUSTOMER'] },
-  { title: "طلب شحن", url: "/topup-request", icon: Plus, roles: ['CUSTOMER'] },
+  { title: "جميع التفعيلات", url: "/activations", icon: PlayCircle, roles: ['ADMIN'] },
+  { title: "جميع الشحنات", url: "/topups", icon: Coins, roles: ['ADMIN'] },
+  
+  // Customer menu items
   { title: "طلب تفعيل", url: "/activation-request", icon: Plus, roles: ['CUSTOMER'] },
+  { title: "طلب شحن", url: "/topup-request", icon: Plus, roles: ['CUSTOMER'] },
+  { title: "تفعيلاتي", url: "/activations", icon: History, roles: ['CUSTOMER'] },
+  { title: "شحناتي", url: "/topups", icon: History, roles: ['CUSTOMER'] },
 ];
 
 export function TopNav() {

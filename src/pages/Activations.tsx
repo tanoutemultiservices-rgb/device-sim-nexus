@@ -127,11 +127,15 @@ export default function Activations() {
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">إجمالي التفعيلات</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {user?.ROLE === 'CUSTOMER' ? 'تفعيلاتي' : 'إجمالي التفعيلات'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{activations.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">جميع المحاولات</p>
+            <div className="text-2xl font-bold">{filteredActivations.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {user?.ROLE === 'CUSTOMER' ? 'جميع طلباتي' : 'جميع المحاولات'}
+            </p>
           </CardContent>
         </Card>
         
@@ -141,7 +145,7 @@ export default function Activations() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {activations.filter(a => a.STATUS === "ACCEPTED").length}
+              {filteredActivations.filter(a => a.STATUS === "ACCEPTED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">عمليات ناجحة</p>
           </CardContent>
@@ -153,7 +157,7 @@ export default function Activations() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-warning">
-              {activations.filter(a => a.STATUS === "PENDING").length}
+              {filteredActivations.filter(a => a.STATUS === "PENDING").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">بانتظار الرد</p>
           </CardContent>
@@ -162,9 +166,11 @@ export default function Activations() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">تفعيلات SIM</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {user?.ROLE === 'CUSTOMER' ? 'تفعيلاتي' : 'جميع تفعيلات SIM'}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            {user?.ROLE === 'CUSTOMER' ? 'مراقبة عمليات التفعيل الخاصة بك' : 'مراقبة عمليات تفعيل بطاقات SIM'}
+            {user?.ROLE === 'CUSTOMER' ? 'سجل عمليات التفعيل الخاصة بك' : 'مراقبة جميع عمليات تفعيل بطاقات SIM'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -184,8 +190,12 @@ export default function Activations() {
 
       <Card>
         <CardHeader>
-          <CardTitle>سجل التفعيلات</CardTitle>
-          <CardDescription>جميع محاولات ونتائج تفعيل بطاقات SIM</CardDescription>
+          <CardTitle>
+            {user?.ROLE === 'CUSTOMER' ? 'سجل تفعيلاتي' : 'سجل جميع التفعيلات'}
+          </CardTitle>
+          <CardDescription>
+            {user?.ROLE === 'CUSTOMER' ? 'جميع عمليات التفعيل الخاصة بك' : 'جميع محاولات ونتائج تفعيل بطاقات SIM'}
+          </CardDescription>
           <div className="mt-4">
             <FilterBar
               searchTerm={searchTerm}

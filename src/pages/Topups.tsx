@@ -136,11 +136,15 @@ export default function Topups() {
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">إجمالي الشحنات</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              {user?.ROLE === 'CUSTOMER' ? 'شحناتي' : 'إجمالي الشحنات'}
+            </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{topups.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">جميع المعاملات</p>
+            <div className="text-2xl font-bold">{filteredTopups.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+              {user?.ROLE === 'CUSTOMER' ? 'جميع طلباتي' : 'جميع المعاملات'}
+            </p>
           </CardContent>
         </Card>
         
@@ -150,7 +154,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {topups.filter(t => t.STATUS === "ACCEPTED").length}
+              {filteredTopups.filter(t => t.STATUS === "ACCEPTED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">ناجحة</p>
           </CardContent>
@@ -162,7 +166,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {topups.filter(t => t.STATUS === "REFUSED").length}
+              {filteredTopups.filter(t => t.STATUS === "REFUSED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">فاشلة</p>
           </CardContent>
@@ -174,7 +178,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
-              {topups.filter(t => t.STATUS === "ACCEPTED").reduce((sum, t) => sum + parseInt(t.MONTANT || 0), 0)}
+              {filteredTopups.filter(t => t.STATUS === "ACCEPTED").reduce((sum, t) => sum + parseInt(t.MONTANT || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">درهم</p>
           </CardContent>
@@ -183,9 +187,11 @@ export default function Topups() {
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">شحن الرصيد</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {user?.ROLE === 'CUSTOMER' ? 'شحناتي' : 'جميع شحنات الرصيد'}
+          </h1>
           <p className="text-muted-foreground mt-2">
-            {user?.ROLE === 'CUSTOMER' ? 'مراقبة عمليات الشحن الخاصة بك' : 'مراقبة عمليات إعادة شحن الرصيد'}
+            {user?.ROLE === 'CUSTOMER' ? 'سجل عمليات الشحن الخاصة بك' : 'مراقبة جميع عمليات إعادة شحن الرصيد'}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -205,8 +211,12 @@ export default function Topups() {
 
       <Card>
         <CardHeader>
-          <CardTitle>سجل الشحنات</CardTitle>
-          <CardDescription>جميع معاملات إعادة شحن الرصيد</CardDescription>
+          <CardTitle>
+            {user?.ROLE === 'CUSTOMER' ? 'سجل شحناتي' : 'سجل جميع الشحنات'}
+          </CardTitle>
+          <CardDescription>
+            {user?.ROLE === 'CUSTOMER' ? 'جميع عمليات الشحن الخاصة بك' : 'جميع معاملات إعادة شحن الرصيد'}
+          </CardDescription>
           <div className="mt-4">
             <FilterBar
               searchTerm={searchTerm}
