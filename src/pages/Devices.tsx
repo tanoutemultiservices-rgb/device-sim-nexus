@@ -1,42 +1,74 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
-import { mockDevices } from "@/lib/mockData";
-import { Power, PowerOff, Smartphone, Search } from "lucide-react";
+import { devicesApi } from "@/services/api";
+import { Power, PowerOff, Smartphone, Search, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Devices() {
-  const [devices, setDevices] = useState(mockDevices);
+  const [devices, setDevices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchDevices();
+  }, []);
+
+  const fetchDevices = async () => {
+    try {
+      setLoading(true);
+      const data = await devicesApi.getAll();
+      setDevices(data as any[]);
+    } catch (error: any) {
+      toast.error(`فشل تحميل الأجهزة: ${error.message}`);
+      console.error('Error fetching devices:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString('ar-MA');
   };
 
-  const toggleDeviceStatus = (deviceId: string) => {
-    setDevices(prev => prev.map(device => {
-      if (device.id === deviceId) {
-        const newStatus = device.status === "1" ? "0" : "1";
-        toast.success(
-          newStatus === "1" 
-            ? `تم تفعيل الجهاز ${device.name}. تم تفعيل جميع بطاقات SIM.` 
-            : `تم تعطيل الجهاز ${device.name}. تم تعطيل جميع بطاقات SIM.`
-        );
-        return { ...device, status: newStatus };
-      }
-      return device;
-    }));
+  const toggleDeviceStatus = async (deviceId: string) => {
+    const device = devices.find(d => d.ID === deviceId);
+    if (!device) return;
+
+    const newStatus = device.STATUS === "1" ? "0" : "1";
+    
+    try {
+      await devicesApi.update({ ...device, STATUS: newStatus });
+      setDevices(prev => prev.map(d => 
+        d.ID === deviceId ? { ...d, STATUS: newStatus } : d
+      ));
+      toast.success(
+        newStatus === "1" 
+          ? `تم تفعيل الجهاز ${device.NOM}. تم تفعيل جميع بطاقات SIM.` 
+          : `تم تعطيل الجهاز ${device.NOM}. تم تعطيل جميع بطاقات SIM.`
+      );
+    } catch (error: any) {
+      toast.error(`فشل تحديث الجهاز: ${error.message}`);
+    }
   };
 
   const filteredDevices = devices.filter(device =>
-    device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.os.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    device.ip.includes(searchTerm)
+    device.NOM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.BRAND?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.OS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    device.IP?.includes(searchTerm)
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -57,7 +89,7 @@ export default function Devices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {devices.filter(d => d.status === "1").length}
+              {devices.filter(d => d.STATUS === "1").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">متصلة حالياً</p>
           </CardContent>
@@ -69,7 +101,7 @@ export default function Devices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {devices.filter(d => d.status === "0").length}
+              {devices.filter(d => d.STATUS === "0").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">غير متصلة حالياً</p>
           </CardContent>
@@ -118,24 +150,24 @@ export default function Devices() {
             </TableHeader>
             <TableBody>
               {filteredDevices.map((device) => (
-                <TableRow key={device.id}>
-                  <TableCell className="font-medium">{device.name}</TableCell>
-                  <TableCell>{device.brand}</TableCell>
-                  <TableCell>{device.os}</TableCell>
-                  <TableCell className="font-mono text-sm">{device.ip}</TableCell>
-                  <TableCell>{device.simCards}</TableCell>
-                  <TableCell className="text-sm">{formatDate(device.lastConnect)}</TableCell>
+                <TableRow key={device.ID}>
+                  <TableCell className="font-medium">{device.NOM}</TableCell>
+                  <TableCell>{device.BRAND}</TableCell>
+                  <TableCell>{device.OS}</TableCell>
+                  <TableCell className="font-mono text-sm">{device.IP}</TableCell>
+                  <TableCell>-</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(device.LAST_CONNECT))}</TableCell>
                   <TableCell>
-                    <StatusBadge status={device.status === "1" ? "active" : "blocked"} />
+                    <StatusBadge status={device.STATUS === "1" ? "active" : "blocked"} />
                   </TableCell>
                   <TableCell>
                     <Button
                       size="sm"
-                      variant={device.status === "1" ? "default" : "destructive"}
-                      onClick={() => toggleDeviceStatus(device.id)}
-                      className={`gap-2 ${device.status === "1" ? "bg-success hover:bg-success/90" : ""}`}
+                      variant={device.STATUS === "1" ? "default" : "destructive"}
+                      onClick={() => toggleDeviceStatus(device.ID)}
+                      className={`gap-2 ${device.STATUS === "1" ? "bg-success hover:bg-success/90" : ""}`}
                     >
-                      {device.status === "1" ? (
+                      {device.STATUS === "1" ? (
                         <>
                           <Power className="h-4 w-4" />
                           تعطيل

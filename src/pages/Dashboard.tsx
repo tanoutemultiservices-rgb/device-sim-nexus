@@ -1,45 +1,88 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
-import { Smartphone, CreditCard, Users, PlayCircle, Coins, Activity, Search } from "lucide-react";
-import { mockDevices, mockSimCards, mockUsers, mockActivations, mockTopups } from "@/lib/mockData";
+import { Smartphone, CreditCard, Users, PlayCircle, Coins, Activity, Search, Loader2 } from "lucide-react";
+import { devicesApi, simCardsApi, usersApi, activationsApi, topupsApi } from "@/services/api";
+import { toast } from "sonner";
 
 export default function Dashboard() {
   const [searchTerm, setSearchTerm] = useState("");
   const [topupSearchTerm, setTopupSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [devices, setDevices] = useState<any[]>([]);
+  const [simCards, setSimCards] = useState<any[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
+  const [activations, setActivations] = useState<any[]>([]);
+  const [topups, setTopups] = useState<any[]>([]);
   const navigate = useNavigate();
 
-  const activeDevices = mockDevices.filter(d => d.status === "1").length;
-  const activeSimCards = mockSimCards.filter(s => s.connected === "1").length;
-  const totalUsers = mockUsers.length;
-  const todayActivations = mockActivations.length;
-  const todayTopups = mockTopups.length;
-  const totalBalance = mockUsers.reduce((sum, user) => sum + user.balance, 0);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        const [devicesData, simCardsData, usersData, activationsData, topupsData] = await Promise.all([
+          devicesApi.getAll(),
+          simCardsApi.getAll(),
+          usersApi.getAll(),
+          activationsApi.getAll(),
+          topupsApi.getAll(),
+        ]);
+        
+        setDevices(devicesData as any[]);
+        setSimCards(simCardsData as any[]);
+        setUsers(usersData as any[]);
+        setActivations(activationsData as any[]);
+        setTopups(topupsData as any[]);
+      } catch (error: any) {
+        toast.error(`فشل تحميل البيانات: ${error.message}`);
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const activeDevices = devices.filter(d => d.STATUS === "1").length;
+  const activeSimCards = simCards.filter(s => s.CONNECTED === "1").length;
+  const totalUsers = users.length;
+  const todayActivations = activations.length;
+  const todayTopups = topups.length;
+  const totalBalance = users.reduce((sum, user) => sum + parseFloat(user.BALANCE || 0), 0);
 
   const formatDate = (timestamp: number) => {
     if (timestamp === 0) return "N/A";
     return new Date(timestamp).toLocaleString();
   };
 
-  const filteredActivations = mockActivations.filter(activation =>
-    activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    activation.phoneNumber.includes(searchTerm) ||
-    activation.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredActivations = activations.filter(activation =>
+    activation.OPERATOR.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    activation.PHONE_NUMBER.includes(searchTerm) ||
+    activation.STATUS.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const filteredTopups = mockTopups.filter(topup =>
-    topup.operator.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
-    topup.status.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
-    topup.user.includes(topupSearchTerm)
+  const filteredTopups = topups.filter(topup =>
+    topup.OPERATOR.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
+    topup.STATUS.toLowerCase().includes(topupSearchTerm.toLowerCase()) ||
+    topup.USER.includes(topupSearchTerm)
   );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   const stats = [
     { 
       title: "الأجهزة النشطة", 
-      value: `${activeDevices}/${mockDevices.length}`, 
+      value: `${activeDevices}/${devices.length}`,
       icon: Smartphone, 
       description: "الأجهزة المتصلة",
       color: "text-primary",
@@ -47,7 +90,7 @@ export default function Dashboard() {
     },
     { 
       title: "بطاقات SIM النشطة", 
-      value: `${activeSimCards}/${mockSimCards.length}`, 
+      value: `${activeSimCards}/${simCards.length}`,
       icon: CreditCard, 
       description: "البطاقات المتصلة",
       color: "text-success",
@@ -144,17 +187,17 @@ export default function Dashboard() {
             </TableHeader>
             <TableBody>
               {filteredActivations.slice(0, 10).map((activation) => (
-                <TableRow key={activation.id}>
-                  <TableCell className="font-medium">#{activation.id}</TableCell>
-                  <TableCell className="text-sm">{formatDate(activation.dateOperation)}</TableCell>
-                  <TableCell>{activation.operator}</TableCell>
-                  <TableCell className="font-mono">{activation.phoneNumber}</TableCell>
+                <TableRow key={activation.ID}>
+                  <TableCell className="font-medium">#{activation.ID}</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_OPERATION))}</TableCell>
+                  <TableCell>{activation.OPERATOR}</TableCell>
+                  <TableCell className="font-mono">{activation.PHONE_NUMBER}</TableCell>
                   <TableCell>
                     <StatusBadge 
-                      status={activation.status.toLowerCase() as any} 
+                      status={activation.STATUS.toLowerCase() as any} 
                     />
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "قيد الانتظار..."}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{activation.MSG_RESPONSE || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
@@ -194,19 +237,19 @@ export default function Dashboard() {
             </TableHeader>
             <TableBody>
               {filteredTopups.slice(0, 10).map((topup: any) => (
-                <TableRow key={topup.id}>
-                  <TableCell className="font-medium">#{topup.id}</TableCell>
-                  <TableCell className="text-sm">{formatDate(topup.dateOperation)}</TableCell>
-                  <TableCell>{topup.operator}</TableCell>
-                  <TableCell className="font-mono">{topup.montant} درهم</TableCell>
-                  <TableCell className="font-mono text-xs">{topup.user.substring(0, 12)}...</TableCell>
-                  <TableCell className="font-mono">{topup.newBalance?.toFixed(3)} درهم</TableCell>
+                <TableRow key={topup.ID}>
+                  <TableCell className="font-medium">#{topup.ID}</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(topup.DATE_OPERATION))}</TableCell>
+                  <TableCell>{topup.OPERATOR}</TableCell>
+                  <TableCell className="font-mono">{topup.MONTANT} درهم</TableCell>
+                  <TableCell className="font-mono text-xs">{topup.USER.substring(0, 12)}...</TableCell>
+                  <TableCell className="font-mono">{parseFloat(topup.NEW_BALANCE || 0).toFixed(3)} درهم</TableCell>
                   <TableCell>
                     <StatusBadge 
-                      status={topup.status.toLowerCase() as any} 
+                      status={topup.STATUS.toLowerCase() as any} 
                     />
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm">{topup.msgResponse || "قيد الانتظار..."}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{topup.MSG_RESPONSE || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
