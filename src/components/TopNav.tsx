@@ -90,7 +90,7 @@ export function TopNav() {
               {item.title}
             </NavLink>)}
         </div>
-        {(user.ROLE === 'CUSTOMER' || user.ROLE === 'CUSTMER') && <div className="flex items-center gap-2 px-6 py-2 bg-secondary/50 rounded-lg border border-border">
+        {user.ROLE === 'ADMIN' && <div className="flex items-center gap-2 px-6 py-2 bg-secondary/50 rounded-lg border border-border">
             <Coins className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground">الرصيد</span>
@@ -98,10 +98,6 @@ export function TopNav() {
             </div>
           </div>}
         <div className="flex items-center gap-4">
-          <NavLink to="/profile" className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
-            <UserCircle className="h-5 w-5" />
-            <span>{user.USERNAME} ({user.ROLE})</span>
-          </NavLink>
           <Button onClick={handleLogout} variant="ghost" size="sm">
             <LogOut className="h-4 w-4" />
           </Button>
