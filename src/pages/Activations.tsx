@@ -102,23 +102,7 @@ export default function Activations() {
       </div>;
   }
   return <div className="space-y-6 animate-fade-in" dir="rtl">
-      <div className="grid gap-4 md:grid-cols-3">
-        
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">مقبولة</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {filteredActivations.filter(a => a.STATUS === "ACCEPTED").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">عمليات ناجحة</p>
-          </CardContent>
-        </Card>
-        
-        
-      </div>
+      
 
       <div className="flex items-center justify-between">
         <div>
