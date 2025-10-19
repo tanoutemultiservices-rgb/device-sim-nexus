@@ -56,6 +56,7 @@ export default function Profile() {
         PRENOM: formData.PRENOM,
         EMAIL: formData.EMAIL,
         TEL: formData.TEL,
+        PASSWORD: currentUser.password,
         STATUS: currentUser.status,
         BALANCE: currentUser.balance,
         DEVICE: currentUser.device,

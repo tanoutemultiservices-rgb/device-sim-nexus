@@ -8,6 +8,7 @@ interface User {
   prenom: string;
   tel: string;
   email: string;
+  password: string;
   status: string;
   balance: number;
   device: string;

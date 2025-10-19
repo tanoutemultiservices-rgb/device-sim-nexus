@@ -42,6 +42,7 @@ CREATE TABLE IF NOT EXISTS users (
     prenom VARCHAR(100) NOT NULL,
     tel VARCHAR(20) NOT NULL,
     email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
     status ENUM('PENDING', 'ACCEPT', 'REJECT') DEFAULT 'PENDING',
     balance DECIMAL(10, 3) DEFAULT 0.000,
     device VARCHAR(50),
@@ -88,9 +89,9 @@ INSERT INTO devices (id, name, brand, os, status, last_connect, ip, sim_cards) V
 ('1505ae2fee7d00aa', 'realme Note 50', 'realme', 'Android 13', '1', 1760748498092, '10.125.117.203', 2),
 ('2f37396e5b991337', 'A12 de Ben Dahmane', 'samsung', 'Android 13', '1', 1760775244447, '192.168.1.3', 2);
 
-INSERT INTO users (id, username, nom, prenom, tel, email, status, balance, device, role) VALUES
-('1505ae2fee7d00aa', 'Khan', 'Khan', 'Juma', '0693916148', 'techpoty@gmail.com', 'ACCEPT', 0.000, '1505ae2fee7d00aa', 'ADMIN'),
-('2f37396e5b991337', 'jawad', 'be dahmane', 'jawad', '0654166466', 'jawad.bendahmane2@gmail.com', 'ACCEPT', 1.300, '2f37396e5b991337', 'CUSTOMER');
+INSERT INTO users (id, username, nom, prenom, tel, email, password, status, balance, device, role) VALUES
+('1505ae2fee7d00aa', 'Khan', 'Khan', 'Juma', '0693916148', 'techpoty@gmail.com', 'admin123', 'ACCEPT', 0.000, '1505ae2fee7d00aa', 'ADMIN'),
+('2f37396e5b991337', 'jawad', 'be dahmane', 'jawad', '0654166466', 'jawad.bendahmane2@gmail.com', 'customer123', 'ACCEPT', 1.300, '2f37396e5b991337', 'CUSTOMER');
 
 INSERT INTO sim_cards (id, operator, number, today_activations, today_topups, connected, balance, activation_status, topup_status, device, last_connect) VALUES
 (73, 'Maroc Telecom', '0612345678', 12, 5, '0', 45.325, '1', '1', '1505ae2fee7d00aa', 1752250399916),
