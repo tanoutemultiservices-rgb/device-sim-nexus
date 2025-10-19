@@ -62,6 +62,15 @@ export function TopNav() {
             </NavLink>
           ))}
         </div>
+        {user.ROLE === 'CUSTOMER' && (
+          <div className="flex items-center gap-2 px-6 py-2 bg-secondary/50 rounded-lg border border-border">
+            <Coins className="h-5 w-5 text-primary" />
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">الرصيد</span>
+              <span className="text-sm font-bold text-foreground">{user.BALANCE?.toFixed(2)} درهم</span>
+            </div>
+          </div>
+        )}
         <div className="flex items-center gap-4">
           <NavLink
             to="/profile"
