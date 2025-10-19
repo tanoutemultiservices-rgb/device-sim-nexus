@@ -15,13 +15,7 @@ const operators = [
 
 const amounts = [5, 10, 20, 50, 100, 200];
 
-const offers = [
-  { id: "data-1gb", name: "1GB Data", price: 10 },
-  { id: "data-5gb", name: "5GB Data", price: 30 },
-  { id: "data-10gb", name: "10GB Data", price: 50 },
-  { id: "unlimited-calls", name: "Unlimited Calls", price: 40 },
-  { id: "mixed-pack", name: "Mixed Pack", price: 60 }
-];
+const offers = ["*1", "*2", "*3", "*6", "*22"];
 
 export default function TopupRequest() {
   const [selectedOperator, setSelectedOperator] = useState("");
@@ -147,26 +141,22 @@ export default function TopupRequest() {
             {/* Offer Selection (Optional) */}
             <div className="space-y-3">
               <Label className="text-base font-semibold">اختر عرض (اختياري)</Label>
-              <RadioGroup value={selectedOffer} onValueChange={setSelectedOffer}>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {offers.map((offer) => (
-                    <div key={offer.id}>
-                      <RadioGroupItem
-                        value={offer.id}
-                        id={`offer-${offer.id}`}
-                        className="peer sr-only"
-                      />
-                      <Label
-                        htmlFor={`offer-${offer.id}`}
-                        className="flex items-center justify-between rounded-lg border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
-                      >
-                        <span className="font-medium">{offer.name}</span>
-                        <span className="text-sm font-bold text-primary">{offer.price} درهم</span>
-                      </Label>
-                    </div>
-                  ))}
-                </div>
-              </RadioGroup>
+              <div className="flex flex-wrap gap-3">
+                {offers.map((offer) => (
+                  <Button
+                    key={offer}
+                    type="button"
+                    variant={selectedOffer === offer ? "default" : "outline"}
+                    onClick={() => setSelectedOffer(selectedOffer === offer ? "" : offer)}
+                    className="text-lg font-mono px-6 py-6"
+                  >
+                    {offer}
+                  </Button>
+                ))}
+              </div>
+              {selectedOffer && (
+                <p className="text-sm text-muted-foreground">العرض المختار: {selectedOffer}</p>
+              )}
             </div>
 
             <Button
