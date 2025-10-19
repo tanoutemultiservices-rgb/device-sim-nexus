@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
+import { FilterBar } from "@/components/FilterBar";
 import { mockActivations } from "@/lib/mockData";
-import { PlayCircle, Search, Trash2 } from "lucide-react";
+import { PlayCircle, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Activations() {
   const [searchTerm, setSearchTerm] = useState("");
   const [activations, setActivations] = useState(mockActivations);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [operatorFilter, setOperatorFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const formatDate = (timestamp: number) => {
     if (timestamp === 0) return "غير متوفر";
@@ -31,12 +34,46 @@ export default function Activations() {
     toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
   };
 
-  const filteredActivations = activations.filter(activation =>
-    activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    activation.phoneNumber.includes(searchTerm) ||
-    activation.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    activation.user.includes(searchTerm)
-  );
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setOperatorFilter("all");
+    setDateFilter("all");
+  };
+
+  const uniqueOperators = useMemo(() => {
+    return Array.from(new Set(activations.map(a => a.operator)));
+  }, [activations]);
+
+  const isWithinDateRange = (timestamp: number, filter: string) => {
+    if (filter === "all") return true;
+    const date = new Date(timestamp);
+    const now = new Date();
+    
+    if (filter === "today") {
+      return date.toDateString() === now.toDateString();
+    } else if (filter === "week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return date >= weekAgo;
+    } else if (filter === "month") {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return date >= monthAgo;
+    }
+    return true;
+  };
+
+  const filteredActivations = activations.filter(activation => {
+    const matchesSearch = activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activation.phoneNumber.includes(searchTerm) ||
+      activation.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activation.user.includes(searchTerm);
+    
+    const matchesStatus = statusFilter === "all" || activation.status === statusFilter;
+    const matchesOperator = operatorFilter === "all" || activation.operator === operatorFilter;
+    const matchesDate = isWithinDateRange(activation.dateOperation, dateFilter);
+    
+    return matchesSearch && matchesStatus && matchesOperator && matchesDate;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -99,15 +136,21 @@ export default function Activations() {
           <CardTitle>سجل التفعيلات</CardTitle>
           <CardDescription>جميع محاولات ونتائج تفعيل بطاقات SIM</CardDescription>
           <div className="mt-4">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
-            </div>
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              operatorFilter={operatorFilter}
+              onOperatorChange={setOperatorFilter}
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+              onReset={resetFilters}
+              searchPlaceholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..."
+              showOperator={true}
+              showDate={true}
+              operators={uniqueOperators}
+            />
           </div>
         </CardHeader>
         <CardContent>

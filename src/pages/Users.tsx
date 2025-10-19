@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
+import { FilterBar } from "@/components/FilterBar";
 import { mockUsers } from "@/lib/mockData";
-import { Users as UsersIcon, Search, Power, PowerOff } from "lucide-react";
+import { Users as UsersIcon, Power, PowerOff } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Users() {
   const [users, setUsers] = useState(mockUsers);
   const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [amountFilter, setAmountFilter] = useState("all");
 
   const toggleUserStatus = (userId: string) => {
     setUsers(prev => prev.map(user => {
@@ -28,13 +30,32 @@ export default function Users() {
     }));
   };
 
-  const filteredUsers = users.filter(user =>
-    user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    user.tel.includes(searchTerm)
-  );
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setAmountFilter("all");
+  };
+
+  const filteredUsers = users.filter(user => {
+    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.tel.includes(searchTerm);
+    
+    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    
+    let matchesAmount = true;
+    if (amountFilter !== "all") {
+      const balance = user.balance;
+      if (amountFilter === "0-10") matchesAmount = balance >= 0 && balance <= 10;
+      else if (amountFilter === "10-30") matchesAmount = balance > 10 && balance <= 30;
+      else if (amountFilter === "30-50") matchesAmount = balance > 30 && balance <= 50;
+      else if (amountFilter === "50+") matchesAmount = balance > 50;
+    }
+    
+    return matchesSearch && matchesStatus && matchesAmount;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -87,15 +108,17 @@ export default function Users() {
           <CardTitle>المستخدمون المسجلون</CardTitle>
           <CardDescription>جميع حسابات العملاء في النظام</CardDescription>
           <div className="mt-4">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="ابحث باسم المستخدم، الاسم، البريد الإلكتروني، أو الهاتف..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
-            </div>
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              amountFilter={amountFilter}
+              onAmountChange={setAmountFilter}
+              onReset={resetFilters}
+              searchPlaceholder="ابحث باسم المستخدم، الاسم، البريد الإلكتروني، أو الهاتف..."
+              showAmount={true}
+            />
           </div>
         </CardHeader>
         <CardContent>

@@ -1,16 +1,20 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
+import { FilterBar } from "@/components/FilterBar";
 import { mockTopups } from "@/lib/mockData";
-import { Coins, Search, Trash2 } from "lucide-react";
+import { Coins, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Topups() {
   const [searchTerm, setSearchTerm] = useState("");
   const [topups, setTopups] = useState(mockTopups);
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [operatorFilter, setOperatorFilter] = useState("all");
+  const [amountFilter, setAmountFilter] = useState("all");
+  const [dateFilter, setDateFilter] = useState("all");
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString('ar-MA');
@@ -30,12 +34,56 @@ export default function Topups() {
     toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
   };
 
-  const filteredTopups = topups.filter(topup =>
-    topup.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    topup.phoneNumber.includes(searchTerm) ||
-    topup.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    topup.user.includes(searchTerm)
-  );
+  const resetFilters = () => {
+    setSearchTerm("");
+    setStatusFilter("all");
+    setOperatorFilter("all");
+    setAmountFilter("all");
+    setDateFilter("all");
+  };
+
+  const uniqueOperators = useMemo(() => {
+    return Array.from(new Set(topups.map(t => t.operator)));
+  }, [topups]);
+
+  const isWithinDateRange = (timestamp: number, filter: string) => {
+    if (filter === "all") return true;
+    const date = new Date(timestamp);
+    const now = new Date();
+    
+    if (filter === "today") {
+      return date.toDateString() === now.toDateString();
+    } else if (filter === "week") {
+      const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+      return date >= weekAgo;
+    } else if (filter === "month") {
+      const monthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+      return date >= monthAgo;
+    }
+    return true;
+  };
+
+  const filteredTopups = topups.filter(topup => {
+    const matchesSearch = topup.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.phoneNumber.includes(searchTerm) ||
+      topup.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.user.includes(searchTerm);
+    
+    const matchesStatus = statusFilter === "all" || topup.status === statusFilter;
+    const matchesOperator = operatorFilter === "all" || topup.operator === operatorFilter;
+    const matchesDate = isWithinDateRange(topup.dateOperation, dateFilter);
+    
+    let matchesAmount = true;
+    if (amountFilter !== "all") {
+      const amount = topup.montant;
+      if (amountFilter === "0-10") matchesAmount = amount >= 0 && amount <= 10;
+      else if (amountFilter === "10-30") matchesAmount = amount > 10 && amount <= 30;
+      else if (amountFilter === "30-50") matchesAmount = amount > 30 && amount <= 50;
+      else if (amountFilter === "50+") matchesAmount = amount > 50;
+    }
+    
+    return matchesSearch && matchesStatus && matchesOperator && matchesDate && matchesAmount;
+  });
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -110,15 +158,24 @@ export default function Topups() {
           <CardTitle>سجل الشحنات</CardTitle>
           <CardDescription>جميع معاملات إعادة شحن الرصيد</CardDescription>
           <div className="mt-4">
-            <div className="relative">
-              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pr-10"
-              />
-            </div>
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              operatorFilter={operatorFilter}
+              onOperatorChange={setOperatorFilter}
+              amountFilter={amountFilter}
+              onAmountChange={setAmountFilter}
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+              onReset={resetFilters}
+              searchPlaceholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..."
+              showOperator={true}
+              showAmount={true}
+              showDate={true}
+              operators={uniqueOperators}
+            />
           </div>
         </CardHeader>
         <CardContent>
