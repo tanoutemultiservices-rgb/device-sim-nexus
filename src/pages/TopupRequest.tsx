@@ -90,12 +90,9 @@ export default function TopupRequest() {
                       />
                       <Label
                         htmlFor={operator.id}
-                        className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-card p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
+                        className="flex items-center justify-center rounded-xl border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all aspect-square"
                       >
-                        <div className="w-20 h-20 flex items-center justify-center mb-3">
-                          <img src={operator.logo} alt={operator.name} className="w-full h-full object-contain" />
-                        </div>
-                        <span className="text-lg font-semibold">{operator.name}</span>
+                        <img src={operator.logo} alt={operator.name} className="w-full h-full object-contain rounded-lg" />
                       </Label>
                     </div>
                   ))}
