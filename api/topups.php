@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $topup_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($topup_id) {
-        $query = "SELECT * FROM topups WHERE id = :id";
+        $query = "SELECT * FROM TOPUP WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $topup_id);
         $stmt->execute();
@@ -37,7 +37,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "Top-up not found"]);
         }
     } else {
-        $query = "SELECT * FROM topups ORDER BY date_operation DESC";
+        $query = "SELECT * FROM TOPUP ORDER BY date_operation DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $topups = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -65,7 +65,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->operator) && !empty($data->phoneNumber) && !empty($data->user)) {
-        $query = "INSERT INTO topups (date_operation, operator, montant, phone_number, status, user, new_balance, msg_response) 
+        $query = "INSERT INTO TOPUP (date_operation, operator, montant, phone_number, status, user, new_balance, msg_response) 
                   VALUES (:date_operation, :operator, :montant, :phone_number, :status, :user, :new_balance, :msg_response)";
         
         $stmt = $db->prepare($query);
@@ -99,7 +99,7 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id)) {
-        $query = "UPDATE topups 
+        $query = "UPDATE TOPUP 
                   SET operator = :operator, montant = :montant, phone_number = :phone_number,
                       status = :status, new_balance = :new_balance, msg_response = :msg_response
                   WHERE id = :id";
@@ -130,7 +130,7 @@ else if ($method === 'DELETE') {
     $topup_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($topup_id) {
-        $query = "DELETE FROM topups WHERE id = :id";
+        $query = "DELETE FROM TOPUP WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $topup_id);
         

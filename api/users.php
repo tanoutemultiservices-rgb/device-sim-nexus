@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "SELECT * FROM users WHERE id = :id";
+        $query = "SELECT * FROM USER WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         $stmt->execute();
@@ -38,7 +38,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "User not found"]);
         }
     } else {
-        $query = "SELECT * FROM users ORDER BY created_at DESC";
+        $query = "SELECT * FROM USER ORDER BY created_at DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -67,7 +67,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id) && !empty($data->username) && !empty($data->email)) {
-        $query = "INSERT INTO users (id, username, nom, prenom, tel, email, status, balance, device, role) 
+        $query = "INSERT INTO USER (id, username, nom, prenom, tel, email, status, balance, device, role) 
                   VALUES (:id, :username, :nom, :prenom, :tel, :email, :status, :balance, :device, :role)";
         
         $stmt = $db->prepare($query);
@@ -100,7 +100,7 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id)) {
-        $query = "UPDATE users 
+        $query = "UPDATE USER 
                   SET username = :username, nom = :nom, prenom = :prenom, tel = :tel,
                       email = :email, status = :status, balance = :balance, device = :device, role = :role
                   WHERE id = :id";
@@ -134,7 +134,7 @@ else if ($method === 'DELETE') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "DELETE FROM users WHERE id = :id";
+        $query = "DELETE FROM USER WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         

@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $sim_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($sim_id) {
-        $query = "SELECT * FROM sim_cards WHERE id = :id";
+        $query = "SELECT * FROM SIM_CARD WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $sim_id);
         $stmt->execute();
@@ -39,7 +39,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "SIM card not found"]);
         }
     } else {
-        $query = "SELECT * FROM sim_cards ORDER BY last_connect DESC";
+        $query = "SELECT * FROM SIM_CARD ORDER BY last_connect DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $sims = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -69,7 +69,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->operator) && !empty($data->number)) {
-        $query = "INSERT INTO sim_cards (operator, number, today_activations, today_topups, connected, 
+        $query = "INSERT INTO SIM_CARD (operator, number, today_activations, today_topups, connected, 
                   balance, activation_status, topup_status, device, last_connect) 
                   VALUES (:operator, :number, :today_activations, :today_topups, :connected, 
                   :balance, :activation_status, :topup_status, :device, :last_connect)";
@@ -104,7 +104,7 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id)) {
-        $query = "UPDATE sim_cards 
+        $query = "UPDATE SIM_CARD 
                   SET operator = :operator, number = :number, today_activations = :today_activations,
                       today_topups = :today_topups, connected = :connected, balance = :balance,
                       activation_status = :activation_status, topup_status = :topup_status,
@@ -141,7 +141,7 @@ else if ($method === 'DELETE') {
     $sim_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($sim_id) {
-        $query = "DELETE FROM sim_cards WHERE id = :id";
+        $query = "DELETE FROM SIM_CARD WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $sim_id);
         

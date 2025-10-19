@@ -15,7 +15,7 @@ if ($method === 'GET') {
     $device_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($device_id) {
-        $query = "SELECT * FROM devices WHERE id = :id";
+        $query = "SELECT * FROM DEVICE WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $device_id);
         $stmt->execute();
@@ -31,7 +31,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "Device not found"]);
         }
     } else {
-        $query = "SELECT * FROM devices ORDER BY last_connect DESC";
+        $query = "SELECT * FROM DEVICE ORDER BY last_connect DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $devices = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -58,7 +58,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id) && !empty($data->name) && !empty($data->brand)) {
-        $query = "INSERT INTO devices (id, name, brand, os, status, last_connect, ip, sim_cards) 
+        $query = "INSERT INTO DEVICE (id, name, brand, os, status, last_connect, ip, sim_cards) 
                   VALUES (:id, :name, :brand, :os, :status, :last_connect, :ip, :sim_cards)";
         
         $stmt = $db->prepare($query);
@@ -89,7 +89,7 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id)) {
-        $query = "UPDATE devices 
+        $query = "UPDATE DEVICE 
                   SET name = :name, brand = :brand, os = :os, status = :status, 
                       last_connect = :last_connect, ip = :ip, sim_cards = :sim_cards
                   WHERE id = :id";
@@ -121,7 +121,7 @@ else if ($method === 'DELETE') {
     $device_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($device_id) {
-        $query = "DELETE FROM devices WHERE id = :id";
+        $query = "DELETE FROM DEVICE WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $device_id);
         

@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $activation_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($activation_id) {
-        $query = "SELECT * FROM activations WHERE id = :id";
+        $query = "SELECT * FROM ACTIVATION WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $activation_id);
         $stmt->execute();
@@ -37,7 +37,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "Activation not found"]);
         }
     } else {
-        $query = "SELECT * FROM activations ORDER BY date_operation DESC";
+        $query = "SELECT * FROM ACTIVATION ORDER BY date_operation DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $activations = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -65,7 +65,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->operator) && !empty($data->phoneNumber) && !empty($data->user)) {
-        $query = "INSERT INTO activations (date_operation, operator, phone_number, ussd_code, status, user, date_response, msg_response) 
+        $query = "INSERT INTO ACTIVATION (date_operation, operator, phone_number, ussd_code, status, user, date_response, msg_response) 
                   VALUES (:date_operation, :operator, :phone_number, :ussd_code, :status, :user, :date_response, :msg_response)";
         
         $stmt = $db->prepare($query);
@@ -99,7 +99,7 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->id)) {
-        $query = "UPDATE activations 
+        $query = "UPDATE ACTIVATION 
                   SET operator = :operator, phone_number = :phone_number, ussd_code = :ussd_code,
                       status = :status, date_response = :date_response, msg_response = :msg_response
                   WHERE id = :id";
@@ -130,7 +130,7 @@ else if ($method === 'DELETE') {
     $activation_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($activation_id) {
-        $query = "DELETE FROM activations WHERE id = :id";
+        $query = "DELETE FROM ACTIVATION WHERE id = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $activation_id);
         
