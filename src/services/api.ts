@@ -10,12 +10,26 @@ async function apiFetch<T>(url: string, options?: RequestInit): Promise<T> {
     },
   });
 
-  if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: 'Network error' }));
-    throw new Error(error.message || 'API request failed');
+  // Get the response as text first
+  const responseText = await response.text();
+
+  // Try to parse as JSON
+  let data;
+  try {
+    data = JSON.parse(responseText);
+  } catch (e) {
+    // If it's not JSON, it's likely a PHP error (HTML)
+    // Extract readable error message
+    const errorMatch = responseText.match(/<b>(.*?)<\/b>/);
+    const errorMsg = errorMatch ? errorMatch[1] : responseText.substring(0, 200);
+    throw new Error(`Server Error: ${errorMsg}`);
   }
 
-  return response.json();
+  if (!response.ok) {
+    throw new Error(data.message || data.error || 'API request failed');
+  }
+
+  return data;
 }
 
 // Devices API
