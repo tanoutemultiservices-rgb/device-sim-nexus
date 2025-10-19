@@ -143,9 +143,7 @@ export default function TopupRequest() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">التعبئة السريـــعة</h1>
           
-          {currentUser && <p className="text-sm text-muted-foreground mt-1">
-              رصيدك الحالي: <span className="font-bold text-primary">{currentUser.BALANCE} درهم</span>
-            </p>}
+          {currentUser}
         </div>
         <Coins className="h-8 w-8 text-primary" />
       </div>
