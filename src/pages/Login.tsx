@@ -8,45 +8,38 @@ import { useAuth } from '@/contexts/AuthContext';
 import { usersApi } from '@/services/api';
 import { toast } from 'sonner';
 import { LogIn, Phone, Lock } from 'lucide-react';
-
 export default function Login() {
   const [tel, setTel] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, user } = useAuth();
+  const {
+    login,
+    user
+  } = useAuth();
   const navigate = useNavigate();
-
   useEffect(() => {
     if (user) {
       navigate('/');
     }
   }, [user, navigate]);
-
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!tel || !password) {
       toast.error('الرجاء إدخال رقم الهاتف وكلمة المرور');
       return;
     }
-
     setLoading(true);
-
     try {
-      const users = await usersApi.getAll() as any[];
-      const foundUser = users.find(
-        (u: any) => u.TEL === tel && u.PASSWORD === password && u.STATUS === 'ACCEPT'
-      );
-
+      const users = (await usersApi.getAll()) as any[];
+      const foundUser = users.find((u: any) => u.TEL === tel && u.PASSWORD === password && u.STATUS === 'ACCEPT');
       if (!foundUser) {
         toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
         setLoading(false);
         return;
       }
-
       await login(foundUser.ID);
       toast.success(`مرحباً ${foundUser.USERNAME}`);
-      
+
       // Redirect based on role
       if (foundUser.ROLE === 'ADMIN') {
         navigate('/');
@@ -62,9 +55,7 @@ export default function Login() {
       setLoading(false);
     }
   };
-
-  return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
+  return <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
       <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
@@ -82,15 +73,7 @@ export default function Login() {
                 <Phone className="h-4 w-4" />
                 رقم الهاتف
               </Label>
-              <Input
-                id="tel"
-                type="tel"
-                placeholder="0612345678"
-                value={tel}
-                onChange={(e) => setTel(e.target.value)}
-                maxLength={10}
-                required
-              />
+              <Input id="tel" type="tel" placeholder="0612345678" value={tel} onChange={e => setTel(e.target.value)} maxLength={10} required />
             </div>
             
             <div className="space-y-2">
@@ -98,41 +81,19 @@ export default function Login() {
                 <Lock className="h-4 w-4" />
                 كلمة المرور
               </Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
 
-            <Button 
-              type="submit" 
-              className="w-full" 
-              disabled={loading}
-            >
-              {loading ? (
-                <>
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   جاري تسجيل الدخول...
-                </>
-              ) : (
-                'تسجيل الدخول'
-              )}
+                </> : 'تسجيل الدخول'}
             </Button>
           </form>
 
-          <div className="mt-6 p-4 bg-muted/50 rounded-lg text-sm" dir="rtl">
-            <p className="font-semibold mb-2">حسابات تجريبية:</p>
-            <div className="space-y-1 text-xs text-muted-foreground">
-              <p><strong>Admin:</strong> 0693916148 / admin123</p>
-              <p><strong>Customer:</strong> 0654166466 / customer123</p>
-            </div>
-          </div>
+          
         </CardContent>
       </Card>
-    </div>
-  );
+    </div>;
 }
