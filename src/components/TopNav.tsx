@@ -1,99 +1,130 @@
-import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, Plus, LogOut, UserCircle, History } from "lucide-react";
+import {
+  LayoutDashboard,
+  Smartphone,
+  CreditCard,
+  Users,
+  PlayCircle,
+  Coins,
+  Plus,
+  LogOut,
+  UserCircle,
+  History,
+} from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 const menuItems = [
-// Admin menu items
-{
-  title: "لوحة التحكم",
-  url: "/",
-  icon: LayoutDashboard,
-  roles: ['ADMIN']
-}, {
-  title: "الأجهزة",
-  url: "/devices",
-  icon: Smartphone,
-  roles: ['ADMIN']
-}, {
-  title: "بطاقات SIM",
-  url: "/sim-cards",
-  icon: CreditCard,
-  roles: ['ADMIN']
-}, {
-  title: "المستخدمون",
-  url: "/users",
-  icon: Users,
-  roles: ['ADMIN']
-}, {
-  title: "جميع التفعيلات",
-  url: "/activations",
-  icon: PlayCircle,
-  roles: ['ADMIN']
-}, {
-  title: "جميع الشحنات",
-  url: "/topups",
-  icon: Coins,
-  roles: ['ADMIN']
-},
-// Customer menu items
-{
-  title: "طلب تفعيل",
-  url: "/activation-request",
-  icon: Plus,
-  roles: ['CUSTOMER']
-}, {
-  title: "شحن",
-  url: "/topup-request",
-  icon: Plus,
-  roles: ['CUSTOMER']
-}, {
-  title: "ACTIVATIONS",
-  url: "/activations",
-  icon: History,
-  roles: ['CUSTOMER']
-}, {
-  title: "RECHARGES",
-  url: "/topups",
-  icon: History,
-  roles: ['CUSTOMER']
-}, {
-  title: "الملف الشخصي",
-  url: "/profile",
-  icon: UserCircle,
-  roles: ['ADMIN', 'CUSTOMER']
-}];
+  // Admin menu items
+  {
+    title: "لوحة التحكم",
+    url: "/",
+    icon: LayoutDashboard,
+    roles: ["ADMIN"],
+  },
+  {
+    title: "الأجهزة",
+    url: "/devices",
+    icon: Smartphone,
+    roles: ["ADMIN"],
+  },
+  {
+    title: "بطاقات SIM",
+    url: "/sim-cards",
+    icon: CreditCard,
+    roles: ["ADMIN"],
+  },
+  {
+    title: "المستخدمون",
+    url: "/users",
+    icon: Users,
+    roles: ["ADMIN"],
+  },
+  {
+    title: "جميع التفعيلات",
+    url: "/activations",
+    icon: PlayCircle,
+    roles: ["ADMIN"],
+  },
+  {
+    title: "جميع الشحنات",
+    url: "/topups",
+    icon: Coins,
+    roles: ["ADMIN"],
+  },
+  // Customer menu items
+  {
+    title: "بطاقة تفعيل",
+    url: "/activation-request",
+    icon: Plus,
+    roles: ["CUSTOMER"],
+  },
+  {
+    title: "تعبئة",
+    url: "/topup-request",
+    icon: Plus,
+    roles: ["CUSTOMER"],
+  },
+  {
+    title: "ACTIVATIONS",
+    url: "/activations",
+    icon: History,
+    roles: ["CUSTOMER"],
+  },
+  {
+    title: "RECHARGES",
+    url: "/topups",
+    icon: History,
+    roles: ["CUSTOMER"],
+  },
+  {
+    title: "الملف الشخصي",
+    url: "/profile",
+    icon: UserCircle,
+    roles: ["ADMIN", "CUSTOMER"],
+  },
+];
 export function TopNav() {
-  const {
-    user,
-    logout
-  } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate("/login");
   };
   if (!user) {
     return null;
   }
 
   // Handle database typo: CUSTMER should be CUSTOMER
-  const normalizedRole = user.ROLE === 'CUSTMER' ? 'CUSTOMER' : user.ROLE;
-  const filteredMenuItems = menuItems.filter(item => item.roles.includes(normalizedRole));
-  return <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
+  const normalizedRole = user.ROLE === "CUSTMER" ? "CUSTOMER" : user.ROLE;
+  const filteredMenuItems = menuItems.filter((item) => item.roles.includes(normalizedRole));
+  return (
+    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
       <div className="flex h-16 items-center px-6 gap-4">
         <div className="flex items-center space-x-3 space-x-reverse">
           <CreditCard className="h-6 w-6 text-primary" />
           <span className="font-bold text-xl tracking-tight">chargi.store</span>
         </div>
-        
+
         <div className="flex items-center space-x-2 space-x-reverse flex-1 mx-4">
-          {filteredMenuItems.map(item => <NavLink key={item.title} to={item.url} end={item.url === "/"} className={({
-          isActive
-        }) => cn("flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200", isActive ? "bg-primary text-primary-foreground shadow-sm" : "text-muted-foreground hover:bg-secondary hover:text-foreground")}>
+          {filteredMenuItems.map((item) => (
+            <NavLink
+              key={item.title}
+              to={item.url}
+              end={item.url === "/"}
+              className={({ isActive }) =>
+                cn(
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
+                  isActive
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground",
+                )
+              }
+            >
               <item.icon className="h-4 w-4" />
               {item.title}
-            </NavLink>)}
+            </NavLink>
+          ))}
         </div>
         <div className="flex items-center gap-2 px-6 py-2 bg-secondary/50 rounded-lg border border-border">
           <Coins className="h-5 w-5 text-primary" />
@@ -108,5 +139,6 @@ export function TopNav() {
           </Button>
         </div>
       </div>
-    </nav>;
+    </nav>
+  );
 }
