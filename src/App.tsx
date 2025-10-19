@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Devices from "./pages/Devices";
 import SimCards from "./pages/SimCards";
@@ -33,7 +34,7 @@ const App = () => (
             <main className="p-6 animate-fade-in">
               <Routes>
                 <Route path="/login" element={<Login />} />
-                <Route path="/" element={<ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>} />
+                <Route path="/" element={<ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}><Home /></ProtectedRoute>} />
                 <Route path="/devices" element={<ProtectedRoute allowedRoles={['ADMIN']}><Devices /></ProtectedRoute>} />
                 <Route path="/sim-cards" element={<ProtectedRoute allowedRoles={['ADMIN']}><SimCards /></ProtectedRoute>} />
                 <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>} />

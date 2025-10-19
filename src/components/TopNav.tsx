@@ -57,6 +57,11 @@ const menuItems = [
   url: "/topups",
   icon: History,
   roles: ['CUSTOMER']
+}, {
+  title: "الملف الشخصي",
+  url: "/profile",
+  icon: UserCircle,
+  roles: ['ADMIN', 'CUSTOMER']
 }];
 export function TopNav() {
   const {
