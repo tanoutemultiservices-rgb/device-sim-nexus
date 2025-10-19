@@ -142,8 +142,6 @@ export default function TopupRequest() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">التعبئة السريـــعة</h1>
-          
-          {currentUser}
         </div>
         <Coins className="h-8 w-8 text-primary" />
       </div>
