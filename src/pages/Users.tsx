@@ -19,8 +19,8 @@ export default function Users() {
         const newStatus = user.status === "ACCEPT" ? "BLOCK" : "ACCEPT";
         toast.success(
           newStatus === "ACCEPT" 
-            ? `User ${user.username} enabled` 
-            : `User ${user.username} disabled`
+            ? `تم تفعيل المستخدم ${user.username}` 
+            : `تم تعطيل المستخدم ${user.username}`
         );
         return { ...user, status: newStatus };
       }
@@ -37,27 +37,63 @@ export default function Users() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in" dir="rtl">
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">إجمالي المستخدمين</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">الحسابات المسجلة</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">المستخدمون النشطون</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-success">
+              {users.filter(u => u.status === "ACCEPT").length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">الحسابات المعتمدة</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">الرصيد الإجمالي</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-accent">
+              {users.reduce((sum, u) => sum + u.balance, 0).toFixed(3)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">درهم</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">Users Management</h1>
-          <p className="text-muted-foreground mt-2">View and manage customer accounts</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">إدارة المستخدمين</h1>
+          <p className="text-muted-foreground mt-2">عرض وإدارة حسابات العملاء</p>
         </div>
         <UsersIcon className="h-8 w-8 text-accent" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>Registered Users</CardTitle>
-          <CardDescription>All customer accounts in the system</CardDescription>
+          <CardTitle>المستخدمون المسجلون</CardTitle>
+          <CardDescription>جميع حسابات العملاء في النظام</CardDescription>
           <div className="mt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by username, name, email, or phone..."
+                placeholder="ابحث باسم المستخدم، الاسم، البريد الإلكتروني، أو الهاتف..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pr-10"
               />
             </div>
           </div>
@@ -66,14 +102,14 @@ export default function Users() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Username</TableHead>
-                <TableHead>Full Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Balance (MAD)</TableHead>
-                <TableHead>Role</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>اسم المستخدم</TableHead>
+                <TableHead>الاسم الكامل</TableHead>
+                <TableHead>البريد الإلكتروني</TableHead>
+                <TableHead>الهاتف</TableHead>
+                <TableHead>الرصيد (درهم)</TableHead>
+                <TableHead>الدور</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -101,13 +137,14 @@ export default function Users() {
                   <TableCell>
                     <Button
                       size="sm"
-                      variant={user.status === "ACCEPT" ? "destructive" : "default"}
+                      variant={user.status === "ACCEPT" ? "default" : "destructive"}
                       onClick={() => toggleUserStatus(user.id)}
+                      className={user.status === "ACCEPT" ? "bg-success hover:bg-success/90" : ""}
                     >
                       {user.status === "ACCEPT" ? (
-                        <PowerOff className="h-4 w-4" />
-                      ) : (
                         <Power className="h-4 w-4" />
+                      ) : (
+                        <PowerOff className="h-4 w-4" />
                       )}
                     </Button>
                   </TableCell>
@@ -117,42 +154,6 @@ export default function Users() {
           </Table>
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{mockUsers.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">Registered accounts</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {mockUsers.filter(u => u.status === "ACCEPT").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Approved accounts</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-accent">
-              {mockUsers.reduce((sum, u) => sum + u.balance, 0).toFixed(3)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">MAD</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }

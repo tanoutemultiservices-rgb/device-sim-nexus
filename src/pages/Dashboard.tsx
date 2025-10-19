@@ -29,54 +29,54 @@ export default function Dashboard() {
 
   const stats = [
     { 
-      title: "Active Devices", 
+      title: "الأجهزة النشطة", 
       value: `${activeDevices}/${mockDevices.length}`, 
       icon: Smartphone, 
-      description: "Devices online",
+      description: "الأجهزة المتصلة",
       color: "text-primary"
     },
     { 
-      title: "Active SIM Cards", 
+      title: "بطاقات SIM النشطة", 
       value: `${activeSimCards}/${mockSimCards.length}`, 
       icon: CreditCard, 
-      description: "Connected SIMs",
+      description: "البطاقات المتصلة",
       color: "text-success"
     },
     { 
-      title: "Total Users", 
+      title: "إجمالي المستخدمين", 
       value: totalUsers, 
       icon: Users, 
-      description: "Registered users",
+      description: "المستخدمين المسجلين",
       color: "text-accent"
     },
     { 
-      title: "Today Activations", 
+      title: "التفعيلات اليوم", 
       value: todayActivations, 
       icon: PlayCircle, 
-      description: "SIM activations",
+      description: "تفعيل البطاقات",
       color: "text-warning"
     },
     { 
-      title: "Today Top-ups", 
+      title: "الشحنات اليوم", 
       value: todayTopups, 
       icon: Coins, 
-      description: "Credit recharges",
+      description: "إعادة الشحن",
       color: "text-primary"
     },
     { 
-      title: "Total Balance", 
-      value: `${totalBalance.toFixed(3)} MAD`, 
+      title: "الرصيد الإجمالي", 
+      value: `${totalBalance.toFixed(3)} درهم`, 
       icon: Activity, 
-      description: "Users balance",
+      description: "رصيد المستخدمين",
       color: "text-success"
     },
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-8 animate-fade-in" dir="rtl">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Dashboard</h1>
-        <p className="text-muted-foreground mt-2">Welcome to your telecom operations management system</p>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">لوحة التحكم</h1>
+        <p className="text-muted-foreground mt-2">مرحباً بك في نظام إدارة عمليات الاتصالات</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -96,16 +96,16 @@ export default function Dashboard() {
 
       <Card>
         <CardHeader>
-          <CardTitle>Recent Activations</CardTitle>
-          <CardDescription>Latest SIM card activation operations</CardDescription>
+          <CardTitle>التفعيلات الأخيرة</CardTitle>
+          <CardDescription>آخر عمليات تفعيل بطاقات SIM</CardDescription>
           <div className="mt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by operator, phone, or status..."
+                placeholder="ابحث بالمشغل، الهاتف، أو الحالة..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pr-10"
               />
             </div>
           </div>
@@ -114,12 +114,12 @@ export default function Dashboard() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Date</TableHead>
-                <TableHead>Operator</TableHead>
-                <TableHead>Phone Number</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Message</TableHead>
+                <TableHead>المعرف</TableHead>
+                <TableHead>التاريخ</TableHead>
+                <TableHead>المشغل</TableHead>
+                <TableHead>رقم الهاتف</TableHead>
+                <TableHead>الحالة</TableHead>
+                <TableHead>الرسالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -134,7 +134,7 @@ export default function Dashboard() {
                       status={activation.status.toLowerCase() as any} 
                     />
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "Pending..."}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

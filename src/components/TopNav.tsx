@@ -3,23 +3,23 @@ import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
 const menuItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Devices", url: "/devices", icon: Smartphone },
-  { title: "SIM Cards", url: "/sim-cards", icon: CreditCard },
-  { title: "Users", url: "/users", icon: Users },
-  { title: "Activations", url: "/activations", icon: PlayCircle },
-  { title: "Top-ups", url: "/topups", icon: Coins },
+  { title: "لوحة التحكم", url: "/", icon: LayoutDashboard },
+  { title: "الأجهزة", url: "/devices", icon: Smartphone },
+  { title: "بطاقات SIM", url: "/sim-cards", icon: CreditCard },
+  { title: "المستخدمون", url: "/users", icon: Users },
+  { title: "التفعيلات", url: "/activations", icon: PlayCircle },
+  { title: "الشحنات", url: "/topups", icon: Coins },
 ];
 
 export function TopNav() {
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
+    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
       <div className="flex h-16 items-center px-6">
-        <div className="mr-8 flex items-center space-x-3">
+        <div className="mr-8 flex items-center space-x-3 space-x-reverse">
           <CreditCard className="h-6 w-6 text-primary" />
-          <span className="font-bold text-xl tracking-tight">Telecom Manager</span>
+          <span className="font-bold text-xl tracking-tight">مدير الاتصالات</span>
         </div>
-        <div className="flex items-center space-x-1 flex-1">
+        <div className="flex items-center space-x-1 space-x-reverse flex-1">
           {menuItems.map((item) => (
             <NavLink
               key={item.title}

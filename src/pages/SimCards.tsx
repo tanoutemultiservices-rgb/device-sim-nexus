@@ -14,7 +14,7 @@ export default function SimCards() {
   const [searchTerm, setSearchTerm] = useState("");
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString();
+    return new Date(timestamp).toLocaleString('ar-MA');
   };
 
   const getDeviceName = (deviceId: string) => {
@@ -29,16 +29,16 @@ export default function SimCards() {
           const newStatus = sim.activationStatus === "1" ? "0" : "1";
           toast.success(
             newStatus === "1" 
-              ? `SIM ${sim.number} activation enabled` 
-              : `SIM ${sim.number} activation disabled`
+              ? `تم تفعيل التفعيل لبطاقة SIM ${sim.number}` 
+              : `تم تعطيل التفعيل لبطاقة SIM ${sim.number}`
           );
           return { ...sim, activationStatus: newStatus };
         } else {
           const newStatus = sim.topupStatus === "1" ? "0" : "1";
           toast.success(
             newStatus === "1" 
-              ? `SIM ${sim.number} top-up enabled` 
-              : `SIM ${sim.number} top-up disabled`
+              ? `تم تفعيل الشحن لبطاقة SIM ${sim.number}` 
+              : `تم تعطيل الشحن لبطاقة SIM ${sim.number}`
           );
           return { ...sim, topupStatus: newStatus };
         }
@@ -54,29 +54,77 @@ export default function SimCards() {
   );
 
   return (
-    <div className="space-y-6 animate-fade-in">
+    <div className="space-y-6 animate-fade-in" dir="rtl">
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">إجمالي البطاقات</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{simCards.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">جميع بطاقات SIM</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">متصلة</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-success">
+              {simCards.filter(s => s.connected === "1").length}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">نشطة حالياً</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">تفعيلات اليوم</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-primary">
+              {simCards.reduce((sum, s) => sum + s.todayActivations, 0)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">إجمالي العمليات</p>
+          </CardContent>
+        </Card>
+        
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">الرصيد الإجمالي</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-accent">
+              {simCards.reduce((sum, s) => sum + s.balance, 0).toFixed(2)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1">درهم</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">SIM Cards Management</h1>
-          <p className="text-muted-foreground mt-2">Monitor and control SIM card operations</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">إدارة بطاقات SIM</h1>
+          <p className="text-muted-foreground mt-2">مراقبة والتحكم في عمليات بطاقات SIM</p>
         </div>
         <CreditCard className="h-8 w-8 text-success" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>SIM Cards Overview</CardTitle>
+          <CardTitle>نظرة عامة على بطاقات SIM</CardTitle>
           <CardDescription>
-            Each SIM card can execute up to 20 successful activation operations per day
+            يمكن لكل بطاقة SIM تنفيذ ما يصل إلى 20 عملية تفعيل ناجحة يومياً
           </CardDescription>
           <div className="mt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search by operator, number, or device..."
+                placeholder="ابحث بالمشغل، الرقم، أو الجهاز..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pr-10"
               />
             </div>
           </div>
@@ -85,15 +133,15 @@ export default function SimCards() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Operator</TableHead>
-                <TableHead>Number</TableHead>
-                <TableHead>Device Name</TableHead>
-                <TableHead>Today Operations</TableHead>
-                <TableHead>Balance (MAD)</TableHead>
-                <TableHead>Connection</TableHead>
-                <TableHead>Last Connect</TableHead>
-                <TableHead>Actions</TableHead>
+                <TableHead>المعرف</TableHead>
+                <TableHead>المشغل</TableHead>
+                <TableHead>الرقم</TableHead>
+                <TableHead>اسم الجهاز</TableHead>
+                <TableHead>عمليات اليوم</TableHead>
+                <TableHead>الرصيد (درهم)</TableHead>
+                <TableHead>الاتصال</TableHead>
+                <TableHead>آخر اتصال</TableHead>
+                <TableHead>الإجراءات</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -106,12 +154,12 @@ export default function SimCards() {
                   <TableCell>
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Activations:</span>
+                        <span className="text-xs text-muted-foreground">التفعيلات:</span>
                         <span className="text-xs font-medium">{sim.todayActivations}/20</span>
                       </div>
                       <Progress value={(sim.todayActivations / 20) * 100} className="h-1" />
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-muted-foreground">Top-ups:</span>
+                        <span className="text-xs text-muted-foreground">الشحنات:</span>
                         <span className="text-xs font-medium">{sim.todayTopups}</span>
                       </div>
                     </div>
@@ -125,26 +173,28 @@ export default function SimCards() {
                     <div className="flex gap-2">
                       <Button
                         size="sm"
-                        variant={sim.activationStatus === "1" ? "outline" : "default"}
+                        variant={sim.activationStatus === "1" ? "default" : "destructive"}
                         onClick={() => toggleSimStatus(sim.id, "activation")}
-                        title={sim.activationStatus === "1" ? "Disable Activation" : "Enable Activation"}
+                        title={sim.activationStatus === "1" ? "تعطيل التفعيل" : "تفعيل التفعيل"}
+                        className={sim.activationStatus === "1" ? "bg-success hover:bg-success/90" : ""}
                       >
                         {sim.activationStatus === "1" ? (
-                          <PowerOff className="h-4 w-4" />
-                        ) : (
                           <Power className="h-4 w-4" />
+                        ) : (
+                          <PowerOff className="h-4 w-4" />
                         )}
                       </Button>
                       <Button
                         size="sm"
-                        variant={sim.topupStatus === "1" ? "outline" : "default"}
+                        variant={sim.topupStatus === "1" ? "default" : "destructive"}
                         onClick={() => toggleSimStatus(sim.id, "topup")}
-                        title={sim.topupStatus === "1" ? "Disable Top-up" : "Enable Top-up"}
+                        title={sim.topupStatus === "1" ? "تعطيل الشحن" : "تفعيل الشحن"}
+                        className={sim.topupStatus === "1" ? "bg-success hover:bg-success/90" : ""}
                       >
                         {sim.topupStatus === "1" ? (
-                          <PowerOff className="h-4 w-4" />
-                        ) : (
                           <Power className="h-4 w-4" />
+                        ) : (
+                          <PowerOff className="h-4 w-4" />
                         )}
                       </Button>
                     </div>
@@ -155,54 +205,6 @@ export default function SimCards() {
           </Table>
         </CardContent>
       </Card>
-
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total SIM Cards</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{simCards.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">All SIM cards</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Connected</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success">
-              {simCards.filter(s => s.connected === "1").length}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Currently active</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Today Activations</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary">
-              {simCards.reduce((sum, s) => sum + s.todayActivations, 0)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">Total operations</p>
-          </CardContent>
-        </Card>
-        
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-accent">
-              {simCards.reduce((sum, s) => sum + s.balance, 0).toFixed(2)}
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">MAD</p>
-          </CardContent>
-        </Card>
-      </div>
     </div>
   );
 }
