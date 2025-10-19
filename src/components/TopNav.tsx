@@ -43,17 +43,17 @@ const menuItems = [
   icon: Plus,
   roles: ['CUSTOMER']
 }, {
-  title: "طلب شحن",
+  title: شحن",
   url: "/topup-request",
   icon: Plus,
   roles: ['CUSTOMER']
 }, {
-  title: "تفعيلاتي",
+  title: "ACTIVATIONS",
   url: "/activations",
   icon: History,
   roles: ['CUSTOMER']
 }, {
-  title: "شحناتي",
+  title: "RECHARGES",
   url: "/topups",
   icon: History,
   roles: ['CUSTOMER']
