@@ -37,8 +37,8 @@ const App = () => (
                 <Route path="/devices" element={<ProtectedRoute allowedRoles={['ADMIN']}><Devices /></ProtectedRoute>} />
                 <Route path="/sim-cards" element={<ProtectedRoute allowedRoles={['ADMIN']}><SimCards /></ProtectedRoute>} />
                 <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>} />
-                <Route path="/activations" element={<ProtectedRoute><Activations /></ProtectedRoute>} />
-                <Route path="/topups" element={<ProtectedRoute><Topups /></ProtectedRoute>} />
+                <Route path="/activations" element={<ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}><Activations /></ProtectedRoute>} />
+                <Route path="/topups" element={<ProtectedRoute allowedRoles={['ADMIN', 'CUSTOMER']}><Topups /></ProtectedRoute>} />
                 <Route path="/topup-request" element={<ProtectedRoute allowedRoles={['CUSTOMER']}><TopupRequest /></ProtectedRoute>} />
                 <Route path="/activation-request" element={<ProtectedRoute allowedRoles={['CUSTOMER']}><ActivationRequest /></ProtectedRoute>} />
                 <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
