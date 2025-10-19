@@ -1,4 +1,4 @@
-import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, TestTube } from "lucide-react";
+import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, UserCircle, TestTube } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import {
   Sidebar,
@@ -19,6 +19,7 @@ const menuItems = [
   { title: "Users", url: "/users", icon: Users },
   { title: "Activations", url: "/activations", icon: PlayCircle },
   { title: "Top-ups", url: "/topups", icon: Coins },
+  { title: "Profile", url: "/profile", icon: UserCircle },
   { title: "API Test", url: "/api-test", icon: TestTube },
 ];
 

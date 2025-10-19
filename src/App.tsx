@@ -12,6 +12,7 @@ import Activations from "./pages/Activations";
 import Topups from "./pages/Topups";
 import TopupRequest from "./pages/TopupRequest";
 import ActivationRequest from "./pages/ActivationRequest";
+import Profile from "./pages/Profile";
 import ApiTest from "./pages/ApiTest";
 import NotFound from "./pages/NotFound";
 
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/topups" element={<Topups />} />
               <Route path="/topup-request" element={<TopupRequest />} />
               <Route path="/activation-request" element={<ActivationRequest />} />
+              <Route path="/profile" element={<Profile />} />
               <Route path="/api-test" element={<ApiTest />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
