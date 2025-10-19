@@ -10,9 +10,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 class Database {
     private $host = "localhost";
-    private $database_name = "your_database_name";
-    private $username = "your_database_user";
-    private $password = "your_database_password";
+    private $database_name = "u841301992_app";
+    private $username = "u841301992_app";
+    private $password = "I9o*>OfCen~";
     public $conn;
 
     public function getConnection() {
