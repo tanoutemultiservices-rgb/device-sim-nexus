@@ -34,15 +34,19 @@ export function TopNav() {
   }
 
   const filteredMenuItems = menuItems.filter(item => item.roles.includes(user.ROLE));
+  
+  console.log('User Role:', user.ROLE);
+  console.log('Filtered Menu Items:', filteredMenuItems);
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
-      <div className="flex h-16 items-center px-6">
-        <div className="mr-8 flex items-center space-x-3 space-x-reverse">
+      <div className="flex h-16 items-center px-6 gap-4">
+        <div className="flex items-center space-x-3 space-x-reverse">
           <CreditCard className="h-6 w-6 text-primary" />
           <span className="font-bold text-xl tracking-tight">مدير الاتصالات</span>
         </div>
-        <div className="flex items-center space-x-1 space-x-reverse flex-1">
+        
+        <div className="flex items-center space-x-2 space-x-reverse flex-1 mx-4">
           {filteredMenuItems.map((item) => (
             <NavLink
               key={item.title}
