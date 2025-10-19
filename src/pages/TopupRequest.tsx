@@ -82,10 +82,9 @@ export default function TopupRequest() {
       return;
     }
 
-    // Find available SIM card with same operator
+    // Find available SIM card with same operator and topup enabled
     const availableSim = simCards.find((sim: any) => 
       sim.OPERATOR === selectedOperator && 
-      sim.CONNECTED === '1' && 
       sim.TOPUP_STATUS === '1'
     );
 
