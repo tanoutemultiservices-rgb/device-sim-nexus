@@ -54,7 +54,7 @@ const menuItems = [
   },
   // Customer menu items
   {
-    title: "بطاقة تفعيل",
+    title: " تفعيل بطاقة",
     url: "/activation-request",
     icon: Plus,
     roles: ["CUSTOMER"],
