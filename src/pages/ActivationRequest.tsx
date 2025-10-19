@@ -81,8 +81,8 @@ export default function ActivationRequest() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {operators.map(operator => <div key={operator.id}>
                       <RadioGroupItem value={operator.id} id={operator.id} className="peer sr-only" />
-                      <Label htmlFor={operator.id} className="flex items-center justify-center rounded-xl border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all aspect-square">
-                        <img src={operator.logo} alt={operator.name} className="w-full h-full object-contain rounded-lg" />
+                      <Label htmlFor={operator.id} className="flex items-center justify-center rounded-xl border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all h-24">
+                        <img src={operator.logo} alt={operator.name} className="h-16 w-auto object-contain" />
                       </Label>
                     </div>)}
                 </div>
