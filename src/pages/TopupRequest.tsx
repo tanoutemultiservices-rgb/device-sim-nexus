@@ -189,8 +189,10 @@ export default function TopupRequest() {
                       />
                       <Label
                         htmlFor={operator.id}
+                        className="flex items-center justify-center rounded-lg border-2 border-muted bg-card p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
                       >
                         <img src={operator.logo} alt={operator.name} className="w-full h-full object-contain rounded-lg" />
+                      </Label>
                     </div>
                   ))}
                 </div>
