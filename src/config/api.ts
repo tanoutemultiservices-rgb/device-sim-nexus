@@ -1,8 +1,5 @@
 // API Configuration
-// Update this URL to your Hostinger domain after deployment
-const API_BASE_URL = import.meta.env.PROD 
-  ? 'https://yourdomain.com/api' // Replace with your actual domain
-  : 'http://localhost/api'; // For local development with XAMPP/WAMP
+const API_BASE_URL = 'https://chargi.store/apis/dashboard';
 
 export const API_ENDPOINTS = {
   devices: `${API_BASE_URL}/devices.php`,
