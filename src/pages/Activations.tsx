@@ -7,8 +7,10 @@ import { FilterBar } from "@/components/FilterBar";
 import { activationsApi } from "@/services/api";
 import { PlayCircle, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Activations() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [activations, setActivations] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -93,18 +95,24 @@ export default function Activations() {
     return true;
   };
 
-  const filteredActivations = activations.filter(activation => {
-    const matchesSearch = activation.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activation.PHONE_NUMBER?.includes(searchTerm) ||
-      activation.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activation.USER?.includes(searchTerm);
-    
-    const matchesStatus = statusFilter === "all" || activation.STATUS === statusFilter;
-    const matchesOperator = operatorFilter === "all" || activation.OPERATOR === operatorFilter;
-    const matchesDate = isWithinDateRange(parseInt(activation.DATE_OPERATION), dateFilter);
-    
-    return matchesSearch && matchesStatus && matchesOperator && matchesDate;
-  });
+  const filteredActivations = activations
+    .filter(activation => {
+      // Filter by user role
+      if (user?.role === 'CUSTOMER' && activation.USER !== user.id) {
+        return false;
+      }
+
+      const matchesSearch = activation.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        activation.PHONE_NUMBER?.includes(searchTerm) ||
+        activation.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        activation.USER?.includes(searchTerm);
+      
+      const matchesStatus = statusFilter === "all" || activation.STATUS === statusFilter;
+      const matchesOperator = operatorFilter === "all" || activation.OPERATOR === operatorFilter;
+      const matchesDate = isWithinDateRange(parseInt(activation.DATE_OPERATION), dateFilter);
+      
+      return matchesSearch && matchesStatus && matchesOperator && matchesDate;
+    });
 
   if (loading) {
     return (
@@ -155,17 +163,21 @@ export default function Activations() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">تفعيلات SIM</h1>
-          <p className="text-muted-foreground mt-2">مراقبة عمليات تفعيل بطاقات SIM</p>
+          <p className="text-muted-foreground mt-2">
+            {user?.role === 'CUSTOMER' ? 'مراقبة عمليات التفعيل الخاصة بك' : 'مراقبة عمليات تفعيل بطاقات SIM'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="destructive"
-            onClick={cleanPending}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            إلغاء العمليات المعلقة
-          </Button>
+          {user?.role === 'ADMIN' && (
+            <Button
+              variant="destructive"
+              onClick={cleanPending}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              إلغاء العمليات المعلقة
+            </Button>
+          )}
           <PlayCircle className="h-8 w-8 text-warning" />
         </div>
       </div>

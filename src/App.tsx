@@ -4,6 +4,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { TopNav } from "@/components/TopNav";
+import { AuthProvider } from "@/contexts/AuthContext";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Dashboard from "./pages/Dashboard";
 import Devices from "./pages/Devices";
 import SimCards from "./pages/SimCards";
@@ -13,6 +15,7 @@ import Topups from "./pages/Topups";
 import TopupRequest from "./pages/TopupRequest";
 import ActivationRequest from "./pages/ActivationRequest";
 import Profile from "./pages/Profile";
+import Login from "./pages/Login";
 import ApiTest from "./pages/ApiTest";
 import NotFound from "./pages/NotFound";
 
@@ -24,24 +27,27 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen w-full bg-background">
-          <TopNav />
-          <main className="p-6 animate-fade-in">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/devices" element={<Devices />} />
-              <Route path="/sim-cards" element={<SimCards />} />
-              <Route path="/users" element={<Users />} />
-              <Route path="/activations" element={<Activations />} />
-              <Route path="/topups" element={<Topups />} />
-              <Route path="/topup-request" element={<TopupRequest />} />
-              <Route path="/activation-request" element={<ActivationRequest />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/api-test" element={<ApiTest />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </main>
-        </div>
+        <AuthProvider>
+          <div className="min-h-screen w-full bg-background">
+            <TopNav />
+            <main className="p-6 animate-fade-in">
+              <Routes>
+                <Route path="/login" element={<Login />} />
+                <Route path="/" element={<ProtectedRoute allowedRoles={['ADMIN']}><Dashboard /></ProtectedRoute>} />
+                <Route path="/devices" element={<ProtectedRoute allowedRoles={['ADMIN']}><Devices /></ProtectedRoute>} />
+                <Route path="/sim-cards" element={<ProtectedRoute allowedRoles={['ADMIN']}><SimCards /></ProtectedRoute>} />
+                <Route path="/users" element={<ProtectedRoute allowedRoles={['ADMIN']}><Users /></ProtectedRoute>} />
+                <Route path="/activations" element={<ProtectedRoute><Activations /></ProtectedRoute>} />
+                <Route path="/topups" element={<ProtectedRoute><Topups /></ProtectedRoute>} />
+                <Route path="/topup-request" element={<ProtectedRoute allowedRoles={['CUSTOMER']}><TopupRequest /></ProtectedRoute>} />
+                <Route path="/activation-request" element={<ProtectedRoute allowedRoles={['CUSTOMER']}><ActivationRequest /></ProtectedRoute>} />
+                <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                <Route path="/api-test" element={<ProtectedRoute allowedRoles={['ADMIN']}><ApiTest /></ProtectedRoute>} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </main>
+          </div>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

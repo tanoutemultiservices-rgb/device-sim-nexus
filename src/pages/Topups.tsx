@@ -7,8 +7,10 @@ import { FilterBar } from "@/components/FilterBar";
 import { topupsApi } from "@/services/api";
 import { Coins, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Topups() {
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [topups, setTopups] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -95,6 +97,11 @@ export default function Topups() {
   };
 
   const filteredTopups = topups.filter(topup => {
+    // Filter by user role
+    if (user?.role === 'CUSTOMER' && topup.USER !== user.id) {
+      return false;
+    }
+
     const matchesSearch = topup.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       topup.PHONE_NUMBER?.includes(searchTerm) ||
       topup.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -177,17 +184,21 @@ export default function Topups() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">شحن الرصيد</h1>
-          <p className="text-muted-foreground mt-2">مراقبة عمليات إعادة شحن الرصيد</p>
+          <p className="text-muted-foreground mt-2">
+            {user?.role === 'CUSTOMER' ? 'مراقبة عمليات الشحن الخاصة بك' : 'مراقبة عمليات إعادة شحن الرصيد'}
+          </p>
         </div>
         <div className="flex items-center gap-3">
-          <Button
-            variant="destructive"
-            onClick={cleanPending}
-            className="gap-2"
-          >
-            <Trash2 className="h-4 w-4" />
-            إلغاء العمليات المعلقة
-          </Button>
+          {user?.role === 'ADMIN' && (
+            <Button
+              variant="destructive"
+              onClick={cleanPending}
+              className="gap-2"
+            >
+              <Trash2 className="h-4 w-4" />
+              إلغاء العمليات المعلقة
+            </Button>
+          )}
           <Coins className="h-8 w-8 text-success" />
         </div>
       </div>

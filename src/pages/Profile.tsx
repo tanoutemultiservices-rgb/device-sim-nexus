@@ -3,64 +3,46 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { User, Mail, Phone, MapPin, Wallet } from "lucide-react";
+import { User, Mail, Phone, Wallet } from "lucide-react";
 import { toast } from "sonner";
 import { usersApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Profile() {
-  const [currentUser, setCurrentUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
+  const { user: currentUser, login } = useAuth();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    USERNAME: "",
-    NOM: "",
-    PRENOM: "",
-    EMAIL: "",
-    TEL: "",
-    VILLE: "",
-    ADRESSE: "",
+    USERNAME: currentUser?.username || "",
+    NOM: currentUser?.nom || "",
+    PRENOM: currentUser?.prenom || "",
+    EMAIL: currentUser?.email || "",
+    TEL: currentUser?.tel || "",
   });
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const userData = await usersApi.getAll();
-        // Get first active user for demo (in production, use authentication)
-        const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-        if (activeUser) {
-          setCurrentUser(activeUser);
-          setFormData({
-            USERNAME: activeUser.USERNAME || "",
-            NOM: activeUser.NOM || "",
-            PRENOM: activeUser.PRENOM || "",
-            EMAIL: activeUser.EMAIL || "",
-            TEL: activeUser.TEL || "",
-            VILLE: activeUser.VILLE || "",
-            ADRESSE: activeUser.ADRESSE || "",
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast.error("خطأ في تحميل بيانات المستخدم");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchUserData();
-  }, []);
+    if (currentUser) {
+      setFormData({
+        USERNAME: currentUser.username || "",
+        NOM: currentUser.nom || "",
+        PRENOM: currentUser.prenom || "",
+        EMAIL: currentUser.email || "",
+        TEL: currentUser.tel || "",
+      });
+    }
+  }, [currentUser]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
+    setFormData(prev => ({
+      ...prev,
       [e.target.name]: e.target.value,
-    });
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!currentUser) {
-      toast.error("لم يتم العثور على المستخدم");
+      toast.error("لم يتم العثور على بيانات المستخدم");
       return;
     }
 
@@ -68,16 +50,22 @@ export default function Profile() {
     
     try {
       await usersApi.update({
-        ...currentUser,
-        ...formData,
+        ID: currentUser.id,
+        USERNAME: formData.USERNAME,
+        NOM: formData.NOM,
+        PRENOM: formData.PRENOM,
+        EMAIL: formData.EMAIL,
+        TEL: formData.TEL,
+        STATUS: currentUser.status,
+        BALANCE: currentUser.balance,
+        DEVICE: currentUser.device,
+        ROLE: currentUser.role,
       });
       
       toast.success("تم تحديث الملف الشخصي بنجاح");
       
       // Refresh user data
-      const userData = await usersApi.getAll();
-      const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-      setCurrentUser(activeUser);
+      await login(currentUser.id);
       
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -87,12 +75,11 @@ export default function Profile() {
     }
   };
 
-  if (loading) {
+  if (!currentUser) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-muted-foreground">جاري التحميل...</p>
+          <p className="text-muted-foreground">لم يتم العثور على بيانات المستخدم</p>
         </div>
       </div>
     );
@@ -119,7 +106,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
-              {currentUser?.BALANCE || "0.000"} <span className="text-lg">درهم</span>
+              {currentUser?.balance || "0.000"} <span className="text-lg">درهم</span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">رصيدك الحالي</p>
           </CardContent>
@@ -133,12 +120,12 @@ export default function Profile() {
           <CardContent>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${
-                currentUser?.STATUS === 'ACCEPT' ? 'bg-success' : 
-                currentUser?.STATUS === 'PENDING' ? 'bg-warning' : 'bg-destructive'
+                currentUser?.status === 'ACCEPT' ? 'bg-success' : 
+                currentUser?.status === 'PENDING' ? 'bg-warning' : 'bg-destructive'
               }`}></div>
               <span className="text-lg font-semibold">
-                {currentUser?.STATUS === 'ACCEPT' ? 'مفعل' :
-                 currentUser?.STATUS === 'PENDING' ? 'قيد المراجعة' : 'محظور'}
+                {currentUser?.status === 'ACCEPT' ? 'مفعل' :
+                 currentUser?.status === 'PENDING' ? 'قيد المراجعة' : 'محظور'}
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">حالة الحساب</p>
@@ -151,8 +138,8 @@ export default function Profile() {
             <CardTitle>الجهاز</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-mono truncate" title={currentUser?.DEVICE}>
-              {currentUser?.DEVICE || "لا يوجد"}
+            <div className="text-sm font-mono truncate" title={currentUser?.device}>
+              {currentUser?.device || "لا يوجد"}
             </div>
             <p className="text-sm text-muted-foreground mt-2">معرف الجهاز</p>
           </CardContent>
@@ -240,30 +227,13 @@ export default function Profile() {
                 />
               </div>
 
-              {/* City */}
+              {/* Role Display */}
               <div className="space-y-2">
-                <Label htmlFor="VILLE" className="flex items-center gap-2">
-                  <MapPin className="h-4 w-4" />
-                  المدينة
-                </Label>
+                <Label>الدور</Label>
                 <Input
-                  id="VILLE"
-                  name="VILLE"
-                  value={formData.VILLE}
-                  onChange={handleInputChange}
-                  placeholder="أدخل المدينة"
-                />
-              </div>
-
-              {/* Address */}
-              <div className="space-y-2 md:col-span-2">
-                <Label htmlFor="ADRESSE">العنوان</Label>
-                <Input
-                  id="ADRESSE"
-                  name="ADRESSE"
-                  value={formData.ADRESSE}
-                  onChange={handleInputChange}
-                  placeholder="أدخل العنوان الكامل"
+                  value={currentUser.role}
+                  disabled
+                  className="bg-muted"
                 />
               </div>
             </div>

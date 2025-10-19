@@ -45,7 +45,7 @@ CREATE TABLE IF NOT EXISTS users (
     status ENUM('PENDING', 'ACCEPT', 'REJECT') DEFAULT 'PENDING',
     balance DECIMAL(10, 3) DEFAULT 0.000,
     device VARCHAR(50),
-    role ENUM('admin', 'user') DEFAULT 'user',
+    role ENUM('ADMIN', 'EXECUTOR', 'CUSTOMER') DEFAULT 'CUSTOMER',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     FOREIGN KEY (device) REFERENCES devices(id) ON DELETE SET NULL
@@ -89,8 +89,8 @@ INSERT INTO devices (id, name, brand, os, status, last_connect, ip, sim_cards) V
 ('2f37396e5b991337', 'A12 de Ben Dahmane', 'samsung', 'Android 13', '1', 1760775244447, '192.168.1.3', 2);
 
 INSERT INTO users (id, username, nom, prenom, tel, email, status, balance, device, role) VALUES
-('1505ae2fee7d00aa', 'Khan', 'Khan', 'Juma', '0693916148', 'techpoty@gmail.com', 'ACCEPT', 0.000, '1505ae2fee7d00aa', 'admin'),
-('2f37396e5b991337', 'jawad', 'be dahmane', 'jawad', '0654166466', 'jawad.bendahmane2@gmail.com', 'ACCEPT', 1.300, '2f37396e5b991337', 'user');
+('1505ae2fee7d00aa', 'Khan', 'Khan', 'Juma', '0693916148', 'techpoty@gmail.com', 'ACCEPT', 0.000, '1505ae2fee7d00aa', 'ADMIN'),
+('2f37396e5b991337', 'jawad', 'be dahmane', 'jawad', '0654166466', 'jawad.bendahmane2@gmail.com', 'ACCEPT', 1.300, '2f37396e5b991337', 'CUSTOMER');
 
 INSERT INTO sim_cards (id, operator, number, today_activations, today_topups, connected, balance, activation_status, topup_status, device, last_connect) VALUES
 (73, 'Maroc Telecom', '0612345678', 12, 5, '0', 45.325, '1', '1', '1505ae2fee7d00aa', 1752250399916),
