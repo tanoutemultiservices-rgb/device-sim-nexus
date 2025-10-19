@@ -4,13 +4,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { PlayCircle, CreditCard } from "lucide-react";
+import { PlayCircle } from "lucide-react";
 import { toast } from "sonner";
+import marocTelecomLogo from "@/assets/maroc-telecom-logo.png";
+import inwiLogo from "@/assets/inwi-logo.jpg";
+import orangeLogo from "@/assets/orange-logo.png";
 
 const operators = [
-  { id: "maroc-telecom", name: "Maroc Telecom", color: "bg-blue-500" },
-  { id: "inwi", name: "inwi", color: "bg-red-500" },
-  { id: "orange", name: "Orange MA", color: "bg-orange-500" }
+  { id: "maroc-telecom", name: "Maroc Telecom", logo: marocTelecomLogo },
+  { id: "inwi", name: "inwi", logo: inwiLogo },
+  { id: "orange", name: "Orange MA", logo: orangeLogo }
 ];
 
 export default function ActivationRequest() {
@@ -93,8 +96,8 @@ export default function ActivationRequest() {
                         htmlFor={operator.id}
                         className="flex flex-col items-center justify-center rounded-lg border-2 border-muted bg-card p-6 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary/10 cursor-pointer transition-all"
                       >
-                        <div className={`w-16 h-16 rounded-full ${operator.color} flex items-center justify-center mb-3`}>
-                          <CreditCard className="h-8 w-8 text-white" />
+                        <div className="w-20 h-20 flex items-center justify-center mb-3">
+                          <img src={operator.logo} alt={operator.name} className="w-full h-full object-contain" />
                         </div>
                         <span className="text-lg font-semibold">{operator.name}</span>
                       </Label>
