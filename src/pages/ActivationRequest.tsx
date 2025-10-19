@@ -105,9 +105,7 @@ export default function ActivationRequest() {
 
             {/* Visual PUK Display */}
             <div className="flex justify-center gap-3 py-4">
-              {[0, 1, 2, 3].map(index => <div key={index} className="w-14 h-14 rounded-lg border-2 border-primary/30 bg-primary/5 flex items-center justify-center text-2xl font-bold">
-                  {pukCode[index] || "•"}
-                </div>)}
+              {[0, 1, 2, 3].map(index => {})}
             </div>
 
             <Button type="submit" size="lg" className="w-full bg-warning hover:bg-warning/90" disabled={loading}>
