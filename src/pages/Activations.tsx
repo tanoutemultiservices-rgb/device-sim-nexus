@@ -103,19 +103,7 @@ export default function Activations() {
   }
   return <div className="space-y-6 animate-fade-in" dir="rtl">
       <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">
-              {user?.ROLE === 'CUSTOMER' ? 'تفعيلاتي' : 'إجمالي التفعيلات'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{filteredActivations.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">
-              {user?.ROLE === 'CUSTOMER' ? 'جميع طلباتي' : 'جميع المحاولات'}
-            </p>
-          </CardContent>
-        </Card>
+        
         
         <Card>
           <CardHeader className="pb-3">
