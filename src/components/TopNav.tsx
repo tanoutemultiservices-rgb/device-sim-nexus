@@ -33,10 +33,9 @@ export function TopNav() {
     return null;
   }
 
-  const filteredMenuItems = menuItems.filter(item => item.roles.includes(user.ROLE));
-  
-  console.log('User Role:', user.ROLE);
-  console.log('Filtered Menu Items:', filteredMenuItems);
+  // Handle database typo: CUSTMER should be CUSTOMER
+  const normalizedRole = user.ROLE === 'CUSTMER' ? 'CUSTOMER' : user.ROLE;
+  const filteredMenuItems = menuItems.filter(item => item.roles.includes(normalizedRole));
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
@@ -66,7 +65,7 @@ export function TopNav() {
             </NavLink>
           ))}
         </div>
-        {user.ROLE === 'CUSTOMER' && (
+        {(user.ROLE === 'CUSTOMER' || user.ROLE === 'CUSTMER') && (
           <div className="flex items-center gap-2 px-6 py-2 bg-secondary/50 rounded-lg border border-border">
             <Coins className="h-5 w-5 text-primary" />
             <div className="flex flex-col">
