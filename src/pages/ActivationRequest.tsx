@@ -64,17 +64,14 @@ export default function ActivationRequest() {
   return <div className="space-y-6 animate-fade-in max-w-4xl mx-auto" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">طلب تفعيل بطاقة SIM</h1>
-          <p className="text-muted-foreground mt-2">اختر المشغل وأدخل البيانات لتفعيل البطاقة</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">تفعيل البطاقات</h1>
+          
         </div>
         <PlayCircle className="h-8 w-8 text-warning" />
       </div>
 
       <Card>
-        <CardHeader>
-          <CardTitle>تفاصيل التفعيل</CardTitle>
-          
-        </CardHeader>
+        
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Operator Selection */}
