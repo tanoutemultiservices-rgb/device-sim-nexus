@@ -1,37 +1,68 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FilterBar } from "@/components/FilterBar";
-import { mockTopups } from "@/lib/mockData";
-import { Coins, Trash2 } from "lucide-react";
+import { topupsApi } from "@/services/api";
+import { Coins, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Topups() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [topups, setTopups] = useState(mockTopups);
+  const [topups, setTopups] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [operatorFilter, setOperatorFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchTopups();
+  }, []);
+
+  const fetchTopups = async () => {
+    try {
+      setLoading(true);
+      const data = await topupsApi.getAll();
+      setTopups(data as any[]);
+    } catch (error: any) {
+      toast.error(`فشل تحميل الشحنات: ${error.message}`);
+      console.error('Error fetching topups:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     return new Date(timestamp).toLocaleString('ar-MA');
   };
 
-  const cleanPending = () => {
-    const pendingCount = topups.filter(t => t.status === "PENDING" as any).length;
+  const cleanPending = async () => {
+    const pendingTopups = topups.filter(t => t.STATUS === "PENDING");
+    const pendingCount = pendingTopups.length;
+    
     if (pendingCount === 0) {
       toast.info("لا توجد عمليات معلقة");
       return;
     }
-    setTopups(prev => prev.map(topup => 
-      topup.status === "PENDING" 
-        ? { ...topup, status: "REFUSED", msgResponse: "تم إلغاء العملية" }
-        : topup
-    ));
-    toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+
+    try {
+      // Update all pending to refused
+      for (const topup of pendingTopups) {
+        await topupsApi.update({
+          ...topup,
+          STATUS: "REFUSED",
+          MSG_RESPONSE: "تم إلغاء العملية"
+        });
+      }
+      
+      // Refresh data
+      await fetchTopups();
+      toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+    } catch (error: any) {
+      toast.error(`فشل إلغاء العمليات: ${error.message}`);
+    }
   };
 
   const resetFilters = () => {
@@ -43,7 +74,7 @@ export default function Topups() {
   };
 
   const uniqueOperators = useMemo(() => {
-    return Array.from(new Set(topups.map(t => t.operator)));
+    return Array.from(new Set(topups.map(t => t.OPERATOR)));
   }, [topups]);
 
   const isWithinDateRange = (timestamp: number, filter: string) => {
@@ -64,18 +95,18 @@ export default function Topups() {
   };
 
   const filteredTopups = topups.filter(topup => {
-    const matchesSearch = topup.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      topup.phoneNumber.includes(searchTerm) ||
-      topup.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      topup.user.includes(searchTerm);
+    const matchesSearch = topup.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.PHONE_NUMBER?.includes(searchTerm) ||
+      topup.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.USER?.includes(searchTerm);
     
-    const matchesStatus = statusFilter === "all" || topup.status === statusFilter;
-    const matchesOperator = operatorFilter === "all" || topup.operator === operatorFilter;
-    const matchesDate = isWithinDateRange(topup.dateOperation, dateFilter);
+    const matchesStatus = statusFilter === "all" || topup.STATUS === statusFilter;
+    const matchesOperator = operatorFilter === "all" || topup.OPERATOR === operatorFilter;
+    const matchesDate = isWithinDateRange(parseInt(topup.DATE_OPERATION), dateFilter);
     
     let matchesAmount = true;
     if (amountFilter !== "all") {
-      const amount = topup.montant;
+      const amount = parseInt(topup.MONTANT || 0);
       if (amountFilter === "0-10") matchesAmount = amount >= 0 && amount <= 10;
       else if (amountFilter === "10-30") matchesAmount = amount > 10 && amount <= 30;
       else if (amountFilter === "30-50") matchesAmount = amount > 30 && amount <= 50;
@@ -84,6 +115,14 @@ export default function Topups() {
     
     return matchesSearch && matchesStatus && matchesOperator && matchesDate && matchesAmount;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -104,7 +143,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {topups.filter(t => t.status === "ACCEPTED").length}
+              {topups.filter(t => t.STATUS === "ACCEPTED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">ناجحة</p>
           </CardContent>
@@ -116,7 +155,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {topups.filter(t => t.status === "REFUSED").length}
+              {topups.filter(t => t.STATUS === "REFUSED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">فاشلة</p>
           </CardContent>
@@ -128,7 +167,7 @@ export default function Topups() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
-              {topups.filter(t => t.status === "ACCEPTED").reduce((sum, t) => sum + t.montant, 0)}
+              {topups.filter(t => t.STATUS === "ACCEPTED").reduce((sum, t) => sum + parseInt(t.MONTANT || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">درهم</p>
           </CardContent>
@@ -195,20 +234,20 @@ export default function Topups() {
             </TableHeader>
             <TableBody>
               {filteredTopups.map((topup) => (
-                <TableRow key={topup.id}>
-                  <TableCell className="font-medium">#{topup.id}</TableCell>
-                  <TableCell className="text-sm">{formatDate(topup.dateOperation)}</TableCell>
-                  <TableCell>{topup.operator}</TableCell>
-                  <TableCell className="font-mono">{topup.phoneNumber}</TableCell>
-                  <TableCell className="font-mono font-medium">{topup.montant}</TableCell>
-                  <TableCell className="font-mono">{topup.newBalance.toFixed(3)}</TableCell>
-                  <TableCell className="font-mono text-xs">{topup.user.substring(0, 12)}...</TableCell>
+                <TableRow key={topup.ID}>
+                  <TableCell className="font-medium">#{topup.ID}</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(topup.DATE_OPERATION))}</TableCell>
+                  <TableCell>{topup.OPERATOR}</TableCell>
+                  <TableCell className="font-mono">{topup.PHONE_NUMBER}</TableCell>
+                  <TableCell className="font-mono font-medium">{topup.MONTANT}</TableCell>
+                  <TableCell className="font-mono">{parseFloat(topup.NEW_BALANCE || 0).toFixed(3)}</TableCell>
+                  <TableCell className="font-mono text-xs">{topup.USER?.substring(0, 12)}...</TableCell>
                   <TableCell>
                     <StatusBadge 
-                      status={topup.status.toLowerCase() as any} 
+                      status={topup.STATUS?.toLowerCase() as any} 
                     />
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm">{topup.msgResponse}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{topup.MSG_RESPONSE || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

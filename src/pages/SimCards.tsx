@@ -1,99 +1,128 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { mockSimCards, mockDevices } from "@/lib/mockData";
-import { CreditCard, Power, PowerOff, Search, Signal, Coins, Activity, Smartphone, Wifi } from "lucide-react";
+import { simCardsApi, devicesApi } from "@/services/api";
+import { CreditCard, Power, PowerOff, Search, Coins, Activity, Smartphone, Wifi, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { Progress } from "@/components/ui/progress";
 
 export default function SimCards() {
-  const [simCards, setSimCards] = useState(mockSimCards);
-  const [devices, setDevices] = useState(mockDevices);
+  const [simCards, setSimCards] = useState<any[]>([]);
+  const [devices, setDevices] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      const [simData, deviceData] = await Promise.all([
+        simCardsApi.getAll(),
+        devicesApi.getAll(),
+      ]);
+      setSimCards(simData as any[]);
+      setDevices(deviceData as any[]);
+    } catch (error: any) {
+      toast.error(`فشل تحميل البيانات: ${error.message}`);
+      console.error('Error fetching data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('ar-MA');
+    if (!timestamp || timestamp === 0) return "غير متوفر";
+    return new Date(parseInt(timestamp.toString())).toLocaleString('ar-MA');
   };
 
   const getDevice = (deviceId: string) => {
     // Remove 'X' prefix if present in SIM card device ID
-    const cleanDeviceId = deviceId.replace(/^X/, '');
-    return devices.find(d => d.id === cleanDeviceId || d.id === deviceId);
+    const cleanDeviceId = deviceId?.replace(/^X/, '');
+    return devices.find(d => d.ID === cleanDeviceId || d.ID === deviceId);
   };
 
-  const toggleDeviceStatus = (deviceId: string) => {
-    setDevices(prev => prev.map(device => {
-      if (device.id === deviceId) {
-        const newStatus = device.status === "1" ? "0" : "1";
+  const toggleDeviceStatus = async (deviceId: string) => {
+    const device = devices.find(d => d.ID === deviceId);
+    if (!device) return;
+
+    const newStatus = device.STATUS === "1" ? "0" : "1";
+    
+    try {
+      await devicesApi.update({ ...device, STATUS: newStatus });
+      
+      // If deactivating device, deactivate all its SIM cards
+      if (newStatus === "0") {
+        const deviceSims = simCards.filter(sim => {
+          const cleanSimDeviceId = sim.DEVICE?.replace(/^X/, '');
+          return cleanSimDeviceId === deviceId || sim.DEVICE === deviceId;
+        });
         
-        // If deactivating device, deactivate all its SIM cards
-        if (newStatus === "0") {
-          setSimCards(prevSims => prevSims.map(sim => {
-            const cleanSimDeviceId = sim.device.replace(/^X/, '');
-            if (cleanSimDeviceId === deviceId || sim.device === deviceId) {
-              return {
-                ...sim,
-                activationStatus: "0",
-                topupStatus: "0"
-              };
-            }
-            return sim;
-          }));
-          
-          toast.success(`تم تعطيل الجهاز ${device.name} وجميع بطاقات SIM الخاصة به`);
-        } else {
-          toast.success(`تم تفعيل الجهاز ${device.name}`);
+        for (const sim of deviceSims) {
+          await simCardsApi.update({
+            ...sim,
+            ACTIVATION_STATUS: "0",
+            TOPUP_STATUS: "0"
+          });
         }
-        
-        return { ...device, status: newStatus };
       }
-      return device;
-    }));
+      
+      // Refresh data
+      await fetchData();
+      
+      toast.success(
+        newStatus === "1" 
+          ? `تم تفعيل الجهاز ${device.NOM}` 
+          : `تم تعطيل الجهاز ${device.NOM} وجميع بطاقات SIM الخاصة به`
+      );
+    } catch (error: any) {
+      toast.error(`فشل تحديث الجهاز: ${error.message}`);
+    }
   };
 
-  const toggleSimStatus = (simId: number, type: "activation" | "topup") => {
+  const toggleSimStatus = async (simId: number, type: "activation" | "topup") => {
     // Find the SIM card
-    const sim = simCards.find(s => s.id === simId);
+    const sim = simCards.find(s => s.ID === simId);
     if (!sim) return;
 
     // Check if device is active
-    const device = getDevice(sim.device);
-    if (!device || device.status === "0") {
+    const device = getDevice(sim.DEVICE);
+    if (!device || device.STATUS === "0") {
       toast.error("لا يمكن تفعيل بطاقة SIM عندما يكون الجهاز غير نشط");
       return;
     }
 
-    setSimCards(prev => prev.map(s => {
-      if (s.id === simId) {
-        if (type === "activation") {
-          const newStatus = s.activationStatus === "1" ? "0" : "1";
-          toast.success(
-            newStatus === "1" 
-              ? `تم تفعيل التفعيل لبطاقة SIM ${s.number}` 
-              : `تم تعطيل التفعيل لبطاقة SIM ${s.number}`
-          );
-          return { ...s, activationStatus: newStatus };
-        } else {
-          const newStatus = s.topupStatus === "1" ? "0" : "1";
-          toast.success(
-            newStatus === "1" 
-              ? `تم تفعيل الشحن لبطاقة SIM ${s.number}` 
-              : `تم تعطيل الشحن لبطاقة SIM ${s.number}`
-          );
-          return { ...s, topupStatus: newStatus };
-        }
-      }
-      return s;
-    }));
+    try {
+      const newStatus = type === "activation" 
+        ? (sim.ACTIVATION_STATUS === "1" ? "0" : "1")
+        : (sim.TOPUP_STATUS === "1" ? "0" : "1");
+
+      await simCardsApi.update({
+        ...sim,
+        [type === "activation" ? "ACTIVATION_STATUS" : "TOPUP_STATUS"]: newStatus
+      });
+
+      await fetchData();
+
+      toast.success(
+        newStatus === "1" 
+          ? `تم تفعيل ${type === "activation" ? "التفعيل" : "الشحن"} لبطاقة SIM ${sim.NUMBER}` 
+          : `تم تعطيل ${type === "activation" ? "التفعيل" : "الشحن"} لبطاقة SIM ${sim.NUMBER}`
+      );
+    } catch (error: any) {
+      toast.error(`فشل تحديث بطاقة SIM: ${error.message}`);
+    }
   };
 
   // Group SIM cards by device
   const deviceGroups = devices.map(device => {
     const deviceSimCards = simCards.filter(sim => {
-      const cleanSimDeviceId = sim.device.replace(/^X/, '');
-      return cleanSimDeviceId === device.id || sim.device === device.id;
+      const cleanSimDeviceId = sim.DEVICE?.replace(/^X/, '');
+      return cleanSimDeviceId === device.ID || sim.DEVICE === device.ID;
     });
     return {
       device,
@@ -103,14 +132,22 @@ export default function SimCards() {
 
   // Filter by search term
   const filteredDeviceGroups = deviceGroups.filter(group => {
-    const deviceMatch = group.device.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                        group.device.brand.toLowerCase().includes(searchTerm.toLowerCase());
+    const deviceMatch = group.device.NOM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                        group.device.BRAND?.toLowerCase().includes(searchTerm.toLowerCase());
     const simMatch = group.simCards.some(sim => 
-      sim.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      sim.number.includes(searchTerm)
+      sim.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      sim.NUMBER?.toString().includes(searchTerm)
     );
     return deviceMatch || simMatch;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -131,7 +168,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {simCards.filter(s => s.connected === "1").length}
+              {simCards.filter(s => s.CONNECTED === "1").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">نشطة حالياً</p>
           </CardContent>
@@ -143,7 +180,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {simCards.reduce((sum, s) => sum + s.todayActivations, 0)}
+              {simCards.reduce((sum, s) => sum + parseInt(s.TODAY_NB_ACTIVATION || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">إجمالي العمليات</p>
           </CardContent>
@@ -155,7 +192,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
-              {simCards.reduce((sum, s) => sum + s.balance, 0).toFixed(2)}
+              {simCards.reduce((sum, s) => sum + parseFloat(s.BALANCE || 0), 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">درهم</p>
           </CardContent>
@@ -191,7 +228,7 @@ export default function SimCards() {
         <CardContent>
           <div className="space-y-6">
             {filteredDeviceGroups.map((group) => (
-              <Card key={group.device.id} className="overflow-hidden border-2">
+              <Card key={group.device.ID} className="overflow-hidden border-2">
                 <CardHeader className="bg-muted/50 pb-4">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-3 flex-1">
@@ -199,35 +236,35 @@ export default function SimCards() {
                         <Smartphone className="h-5 w-5 text-primary" />
                       </div>
                       <div className="flex-1">
-                        <CardTitle className="text-lg">{group.device.name}</CardTitle>
+                        <CardTitle className="text-lg">{group.device.NOM}</CardTitle>
                         <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                          <span>{group.device.brand}</span>
+                          <span>{group.device.BRAND}</span>
                           <span>•</span>
-                          <span>{group.device.os}</span>
+                          <span>{group.device.OS}</span>
                           <span>•</span>
                           <div className="flex items-center gap-1">
                             <Wifi className="h-3 w-3" />
-                            <span className="font-mono text-xs">{group.device.ip}</span>
+                            <span className="font-mono text-xs">{group.device.IP}</span>
                           </div>
                         </div>
                       </div>
                     </div>
                     <div className="flex items-center gap-3">
                       <div className="flex flex-col items-end gap-2">
-                        <Badge variant={group.device.status === "1" ? "default" : "secondary"}>
-                          {group.device.status === "1" ? "نشط" : "غير نشط"}
+                        <Badge variant={group.device.STATUS === "1" ? "default" : "secondary"}>
+                          {group.device.STATUS === "1" ? "نشط" : "غير نشط"}
                         </Badge>
                         <span className="text-xs text-muted-foreground">
-                          {formatDate(group.device.lastConnect)}
+                          {formatDate(parseInt(group.device.LAST_CONNECT))}
                         </span>
                       </div>
                       <Button
                         size="sm"
-                        variant={group.device.status === "1" ? "default" : "destructive"}
-                        onClick={() => toggleDeviceStatus(group.device.id)}
-                        className={group.device.status === "1" ? "bg-success hover:bg-success/90" : ""}
+                        variant={group.device.STATUS === "1" ? "default" : "destructive"}
+                        onClick={() => toggleDeviceStatus(group.device.ID)}
+                        className={group.device.STATUS === "1" ? "bg-success hover:bg-success/90" : ""}
                       >
-                        {group.device.status === "1" ? (
+                        {group.device.STATUS === "1" ? (
                           <>
                             <Power className="h-4 w-4 ml-1" />
                             تعطيل
@@ -247,18 +284,18 @@ export default function SimCards() {
                   {group.simCards.length > 0 ? (
                     <div className="grid gap-4 md:grid-cols-2">
                       {group.simCards.map((sim) => (
-                        <Card key={sim.id} className="bg-card/50">
+                        <Card key={sim.ID} className="bg-card/50">
                           <CardHeader className="pb-3">
                             <div className="flex items-start justify-between">
                               <div className="space-y-1">
                                 <div className="flex items-center gap-2">
                                   <CreditCard className="h-4 w-4 text-primary" />
-                                  <CardTitle className="text-base">{sim.operator}</CardTitle>
+                                  <CardTitle className="text-base">{sim.OPERATOR}</CardTitle>
                                 </div>
-                                <p className="text-sm font-mono text-muted-foreground">{sim.number}</p>
+                                <p className="text-sm font-mono text-muted-foreground">{sim.NUMBER || "غير متوفر"}</p>
                               </div>
-                              <Badge variant={sim.connected === "1" ? "default" : "secondary"} className="text-xs">
-                                {sim.connected === "1" ? "متصل" : "غير متصل"}
+                              <Badge variant={sim.CONNECTED === "1" ? "default" : "secondary"} className="text-xs">
+                                {sim.CONNECTED === "1" ? "متصل" : "غير متصل"}
                               </Badge>
                             </div>
                           </CardHeader>
@@ -269,38 +306,38 @@ export default function SimCards() {
                                   <Coins className="h-3 w-3" />
                                   <span className="text-xs">الرصيد</span>
                                 </div>
-                                <p className="font-medium font-mono text-sm">{sim.balance.toFixed(3)} د</p>
+                                <p className="font-medium font-mono text-sm">{parseFloat(sim.BALANCE || 0).toFixed(3)} د</p>
                               </div>
                               <div className="space-y-1">
                                 <div className="flex items-center gap-1 text-muted-foreground">
                                   <Activity className="h-3 w-3" />
                                   <span className="text-xs">الشحنات</span>
                                 </div>
-                                <p className="font-medium text-sm">{sim.todayTopups} اليوم</p>
+                                <p className="font-medium text-sm">{sim.TODAY_NB_TOPUP || 0} اليوم</p>
                               </div>
                             </div>
 
                             <div className="space-y-2">
                               <div className="flex items-center justify-between">
                                 <span className="text-xs text-muted-foreground">التفعيلات اليوم</span>
-                                <span className="text-xs font-medium">{sim.todayActivations}/20</span>
+                                <span className="text-xs font-medium">{sim.TODAY_NB_ACTIVATION || 0}/20</span>
                               </div>
-                              <Progress value={(sim.todayActivations / 20) * 100} className="h-2" />
+                              <Progress value={(parseInt(sim.TODAY_NB_ACTIVATION || 0) / 20) * 100} className="h-2" />
                             </div>
 
                             <div className="pt-3 border-t">
                               <p className="text-xs text-muted-foreground mb-3">
-                                آخر اتصال: {formatDate(sim.lastConnect)}
+                                آخر اتصال: {formatDate(parseInt(sim.LAST_CONNECT || 0))}
                               </p>
                               <div className="flex gap-2">
                                 <Button
                                   size="sm"
-                                  variant={sim.activationStatus === "1" ? "default" : "destructive"}
-                                  onClick={() => toggleSimStatus(sim.id, "activation")}
-                                  disabled={group.device.status === "0"}
-                                  className={`flex-1 ${sim.activationStatus === "1" ? "bg-success hover:bg-success/90" : ""}`}
+                                  variant={sim.ACTIVATION_STATUS === "1" ? "default" : "destructive"}
+                                  onClick={() => toggleSimStatus(sim.ID, "activation")}
+                                  disabled={group.device.STATUS === "0"}
+                                  className={`flex-1 ${sim.ACTIVATION_STATUS === "1" ? "bg-success hover:bg-success/90" : ""}`}
                                 >
-                                  {sim.activationStatus === "1" ? (
+                                  {sim.ACTIVATION_STATUS === "1" ? (
                                     <>
                                       <Power className="h-3 w-3 ml-1" />
                                       تفعيل
@@ -314,12 +351,12 @@ export default function SimCards() {
                                 </Button>
                                 <Button
                                   size="sm"
-                                  variant={sim.topupStatus === "1" ? "default" : "destructive"}
-                                  onClick={() => toggleSimStatus(sim.id, "topup")}
-                                  disabled={group.device.status === "0"}
-                                  className={`flex-1 ${sim.topupStatus === "1" ? "bg-success hover:bg-success/90" : ""}`}
+                                  variant={sim.TOPUP_STATUS === "1" ? "default" : "destructive"}
+                                  onClick={() => toggleSimStatus(sim.ID, "topup")}
+                                  disabled={group.device.STATUS === "0"}
+                                  className={`flex-1 ${sim.TOPUP_STATUS === "1" ? "bg-success hover:bg-success/90" : ""}`}
                                 >
-                                  {sim.topupStatus === "1" ? (
+                                  {sim.TOPUP_STATUS === "1" ? (
                                     <>
                                       <Power className="h-3 w-3 ml-1" />
                                       شحن

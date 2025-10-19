@@ -1,33 +1,57 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FilterBar } from "@/components/FilterBar";
-import { mockUsers } from "@/lib/mockData";
-import { Users as UsersIcon, Power, PowerOff } from "lucide-react";
+import { usersApi } from "@/services/api";
+import { Users as UsersIcon, Power, PowerOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Users() {
-  const [users, setUsers] = useState(mockUsers);
+  const [users, setUsers] = useState<any[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [amountFilter, setAmountFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
 
-  const toggleUserStatus = (userId: string) => {
-    setUsers(prev => prev.map(user => {
-      if (user.id === userId) {
-        const newStatus = user.status === "ACCEPT" ? "BLOCK" : "ACCEPT";
-        toast.success(
-          newStatus === "ACCEPT" 
-            ? `تم تفعيل المستخدم ${user.username}` 
-            : `تم تعطيل المستخدم ${user.username}`
-        );
-        return { ...user, status: newStatus };
-      }
-      return user;
-    }));
+  useEffect(() => {
+    fetchUsers();
+  }, []);
+
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      const data = await usersApi.getAll();
+      setUsers(data as any[]);
+    } catch (error: any) {
+      toast.error(`فشل تحميل المستخدمين: ${error.message}`);
+      console.error('Error fetching users:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const toggleUserStatus = async (userId: string) => {
+    const user = users.find(u => u.ID === userId);
+    if (!user) return;
+
+    const newStatus = user.STATUS === "ACCEPT" ? "BLOCK" : "ACCEPT";
+    
+    try {
+      await usersApi.update({ ...user, STATUS: newStatus });
+      setUsers(prev => prev.map(u => 
+        u.ID === userId ? { ...u, STATUS: newStatus } : u
+      ));
+      toast.success(
+        newStatus === "ACCEPT" 
+          ? `تم تفعيل المستخدم ${user.USERNAME}` 
+          : `تم تعطيل المستخدم ${user.USERNAME}`
+      );
+    } catch (error: any) {
+      toast.error(`فشل تحديث المستخدم: ${error.message}`);
+    }
   };
 
   const resetFilters = () => {
@@ -37,17 +61,17 @@ export default function Users() {
   };
 
   const filteredUsers = users.filter(user => {
-    const matchesSearch = user.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.tel.includes(searchTerm);
+    const matchesSearch = user.USERNAME?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.NOM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.PRENOM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.EMAIL?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.TEL?.includes(searchTerm);
     
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter;
+    const matchesStatus = statusFilter === "all" || user.STATUS === statusFilter;
     
     let matchesAmount = true;
     if (amountFilter !== "all") {
-      const balance = user.balance;
+      const balance = parseFloat(user.BALANCE || 0);
       if (amountFilter === "0-10") matchesAmount = balance >= 0 && balance <= 10;
       else if (amountFilter === "10-30") matchesAmount = balance > 10 && balance <= 30;
       else if (amountFilter === "30-50") matchesAmount = balance > 30 && balance <= 50;
@@ -56,6 +80,14 @@ export default function Users() {
     
     return matchesSearch && matchesStatus && matchesAmount;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -76,7 +108,7 @@ export default function Users() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {users.filter(u => u.status === "ACCEPT").length}
+              {users.filter(u => u.STATUS === "ACCEPT").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">الحسابات المعتمدة</p>
           </CardContent>
@@ -88,7 +120,7 @@ export default function Users() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
-              {users.reduce((sum, u) => sum + u.balance, 0).toFixed(3)}
+              {users.reduce((sum, u) => sum + parseFloat(u.BALANCE || 0), 0).toFixed(3)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">درهم</p>
           </CardContent>
@@ -137,22 +169,22 @@ export default function Users() {
             </TableHeader>
             <TableBody>
               {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell className="font-medium">{user.username}</TableCell>
-                  <TableCell>{`${user.prenom} ${user.nom}`}</TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell className="font-mono">{user.tel}</TableCell>
-                  <TableCell className="font-mono">{user.balance.toFixed(3)}</TableCell>
+                <TableRow key={user.ID}>
+                  <TableCell className="font-medium">{user.USERNAME}</TableCell>
+                  <TableCell>{`${user.PRENOM} ${user.NOM}`}</TableCell>
+                  <TableCell>{user.EMAIL}</TableCell>
+                  <TableCell className="font-mono">{user.TEL}</TableCell>
+                  <TableCell className="font-mono">{parseFloat(user.BALANCE || 0).toFixed(3)}</TableCell>
                   <TableCell>
-                    <Badge variant={user.role === "admin" ? "default" : "secondary"}>
-                      {user.role}
+                    <Badge variant="secondary">
+                      user
                     </Badge>
                   </TableCell>
                   <TableCell>
                     <StatusBadge 
                       status={
-                        user.status === "ACCEPT" ? "active" : 
-                        user.status === "PENDING" ? "pending" : 
+                        user.STATUS === "ACCEPT" ? "active" : 
+                        user.STATUS === "PENDING" ? "pending" : 
                         "blocked"
                       } 
                     />
@@ -160,11 +192,11 @@ export default function Users() {
                   <TableCell>
                     <Button
                       size="sm"
-                      variant={user.status === "ACCEPT" ? "default" : "destructive"}
-                      onClick={() => toggleUserStatus(user.id)}
-                      className={user.status === "ACCEPT" ? "bg-success hover:bg-success/90" : ""}
+                      variant={user.STATUS === "ACCEPT" ? "default" : "destructive"}
+                      onClick={() => toggleUserStatus(user.ID)}
+                      className={user.STATUS === "ACCEPT" ? "bg-success hover:bg-success/90" : ""}
                     >
-                      {user.status === "ACCEPT" ? (
+                      {user.STATUS === "ACCEPT" ? (
                         <Power className="h-4 w-4" />
                       ) : (
                         <PowerOff className="h-4 w-4" />

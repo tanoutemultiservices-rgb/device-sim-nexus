@@ -1,37 +1,68 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { StatusBadge } from "@/components/StatusBadge";
 import { FilterBar } from "@/components/FilterBar";
-import { mockActivations } from "@/lib/mockData";
-import { PlayCircle, Trash2 } from "lucide-react";
+import { activationsApi } from "@/services/api";
+import { PlayCircle, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 
 export default function Activations() {
   const [searchTerm, setSearchTerm] = useState("");
-  const [activations, setActivations] = useState(mockActivations);
+  const [activations, setActivations] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
   const [operatorFilter, setOperatorFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchActivations();
+  }, []);
+
+  const fetchActivations = async () => {
+    try {
+      setLoading(true);
+      const data = await activationsApi.getAll();
+      setActivations(data as any[]);
+    } catch (error: any) {
+      toast.error(`فشل تحميل التفعيلات: ${error.message}`);
+      console.error('Error fetching activations:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (timestamp: number) => {
     if (timestamp === 0) return "غير متوفر";
     return new Date(timestamp).toLocaleString('ar-MA');
   };
 
-  const cleanPending = () => {
-    const pendingCount = activations.filter(a => a.status === "PENDING").length;
+  const cleanPending = async () => {
+    const pendingActivations = activations.filter(a => a.STATUS === "PENDING");
+    const pendingCount = pendingActivations.length;
+    
     if (pendingCount === 0) {
       toast.info("لا توجد عمليات معلقة");
       return;
     }
-    setActivations(prev => prev.map(activation => 
-      activation.status === "PENDING" 
-        ? { ...activation, status: "REFUSED" as any, msgResponse: "تم إلغاء العملية" }
-        : activation
-    ));
-    toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+
+    try {
+      // Update all pending to refused
+      for (const activation of pendingActivations) {
+        await activationsApi.update({
+          ...activation,
+          STATUS: "REFUSED",
+          MSG_RESPONSE: "تم إلغاء العملية"
+        });
+      }
+      
+      // Refresh data
+      await fetchActivations();
+      toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+    } catch (error: any) {
+      toast.error(`فشل إلغاء العمليات: ${error.message}`);
+    }
   };
 
   const resetFilters = () => {
@@ -42,7 +73,7 @@ export default function Activations() {
   };
 
   const uniqueOperators = useMemo(() => {
-    return Array.from(new Set(activations.map(a => a.operator)));
+    return Array.from(new Set(activations.map(a => a.OPERATOR)));
   }, [activations]);
 
   const isWithinDateRange = (timestamp: number, filter: string) => {
@@ -63,17 +94,25 @@ export default function Activations() {
   };
 
   const filteredActivations = activations.filter(activation => {
-    const matchesSearch = activation.operator.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activation.phoneNumber.includes(searchTerm) ||
-      activation.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      activation.user.includes(searchTerm);
+    const matchesSearch = activation.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activation.PHONE_NUMBER?.includes(searchTerm) ||
+      activation.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      activation.USER?.includes(searchTerm);
     
-    const matchesStatus = statusFilter === "all" || activation.status === statusFilter;
-    const matchesOperator = operatorFilter === "all" || activation.operator === operatorFilter;
-    const matchesDate = isWithinDateRange(activation.dateOperation, dateFilter);
+    const matchesStatus = statusFilter === "all" || activation.STATUS === statusFilter;
+    const matchesOperator = operatorFilter === "all" || activation.OPERATOR === operatorFilter;
+    const matchesDate = isWithinDateRange(parseInt(activation.DATE_OPERATION), dateFilter);
     
     return matchesSearch && matchesStatus && matchesOperator && matchesDate;
   });
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 animate-fade-in" dir="rtl">
@@ -94,7 +133,7 @@ export default function Activations() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {activations.filter(a => a.status === "ACCEPTED").length}
+              {activations.filter(a => a.STATUS === "ACCEPTED").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">عمليات ناجحة</p>
           </CardContent>
@@ -106,7 +145,7 @@ export default function Activations() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-warning">
-              {activations.filter(a => a.status === "PENDING").length}
+              {activations.filter(a => a.STATUS === "PENDING").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">بانتظار الرد</p>
           </CardContent>
@@ -170,20 +209,20 @@ export default function Activations() {
             </TableHeader>
             <TableBody>
               {filteredActivations.map((activation: any) => (
-                <TableRow key={activation.id}>
-                  <TableCell className="font-medium">#{activation.id}</TableCell>
-                  <TableCell className="text-sm">{formatDate(activation.dateOperation)}</TableCell>
-                  <TableCell>{activation.operator}</TableCell>
-                  <TableCell className="font-mono">{activation.phoneNumber}</TableCell>
-                  <TableCell className="font-mono text-sm text-primary">{activation.ussdCode || "N/A"}</TableCell>
-                  <TableCell className="font-mono text-xs">{activation.user.substring(0, 12)}...</TableCell>
-                  <TableCell className="text-sm">{formatDate(activation.dateResponse)}</TableCell>
+                <TableRow key={activation.ID}>
+                  <TableCell className="font-medium">#{activation.ID}</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_OPERATION))}</TableCell>
+                  <TableCell>{activation.OPERATOR}</TableCell>
+                  <TableCell className="font-mono">{activation.PHONE_NUMBER}</TableCell>
+                  <TableCell className="font-mono text-sm text-primary">{activation.CODE_USSD || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-xs">{activation.USER?.substring(0, 12)}...</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_RESPONSE || 0))}</TableCell>
                   <TableCell>
                     <StatusBadge 
-                      status={activation.status.toLowerCase() as any} 
+                      status={activation.STATUS?.toLowerCase() as any} 
                     />
                   </TableCell>
-                  <TableCell className="max-w-xs truncate text-sm">{activation.msgResponse || "قيد الانتظار..."}</TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">{activation.MSG_RESPONSE || "قيد الانتظار..."}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
