@@ -180,7 +180,10 @@ export default function TopupRequest() {
             {/* Amount Selection */}
             <div className="space-y-3">
               <Label className="text-base font-semibold">اختر المبلغ (درهم)</Label>
-              <RadioGroup value={selectedAmount} onValueChange={setSelectedAmount}>
+              <RadioGroup value={selectedAmount} onValueChange={(value) => {
+                setSelectedAmount(value);
+                setSelectedOffer(""); // Clear offer when amount changes
+              }}>
                 <div className="grid grid-cols-3 md:grid-cols-6 gap-3">
                   {amounts.map(amount => <div key={amount}>
                       <RadioGroupItem value={amount.toString()} id={`amount-${amount}`} className="peer sr-only" />
@@ -192,16 +195,18 @@ export default function TopupRequest() {
               </RadioGroup>
             </div>
 
-            {/* Offer Selection (Optional) */}
-            <div className="space-y-3">
-              <Label className="text-base font-semibold">اختر عرض (اختياري)</Label>
-              <div className="flex flex-wrap gap-3">
-                {offers.map(offer => <Button key={offer} type="button" variant={selectedOffer === offer ? "default" : "outline"} onClick={() => setSelectedOffer(selectedOffer === offer ? "" : offer)} className="text-lg font-mono px-6 py-6">
-                    {offer}
-                  </Button>)}
+            {/* Offer Selection (Optional) - Only show when amount is selected */}
+            {selectedAmount && (
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">اختر عرض (اختياري)</Label>
+                <div className="flex flex-wrap gap-3">
+                  {offers.map(offer => <Button key={offer} type="button" variant={selectedOffer === offer ? "default" : "outline"} onClick={() => setSelectedOffer(selectedOffer === offer ? "" : offer)} className="text-lg font-mono px-6 py-6">
+                      {offer}
+                    </Button>)}
+                </div>
+                {selectedOffer && <p className="text-sm text-muted-foreground">العرض المختار: {selectedOffer}</p>}
               </div>
-              {selectedOffer && <p className="text-sm text-muted-foreground">العرض المختار: {selectedOffer}</p>}
-            </div>
+            )}
 
             <Button type="submit" size="lg" className="w-full bg-success hover:bg-success/90" disabled={loading}>
               {loading ? "جاري الإرسال..." : "شحن الرصيد"}
