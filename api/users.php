@@ -13,52 +13,24 @@ if ($method === 'GET') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "SELECT * FROM USER WHERE id = :id";
+        $query = "SELECT * FROM USER WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         $stmt->execute();
         $user = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($user) {
-            $result = [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'nom' => $user['nom'],
-                'prenom' => $user['prenom'],
-                'tel' => $user['tel'],
-                'email' => $user['email'],
-                'status' => $user['status'],
-                'balance' => (float)$user['balance'],
-                'device' => $user['device'],
-                'role' => $user['role']
-            ];
-            echo json_encode($result);
+            echo json_encode($user);
         } else {
             http_response_code(404);
             echo json_encode(["message" => "User not found"]);
         }
     } else {
-        $query = "SELECT * FROM USER ORDER BY created_at DESC";
+        $query = "SELECT * FROM USER ORDER BY USERNAME";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $result = array_map(function($user) {
-            return [
-                'id' => $user['id'],
-                'username' => $user['username'],
-                'nom' => $user['nom'],
-                'prenom' => $user['prenom'],
-                'tel' => $user['tel'],
-                'email' => $user['email'],
-                'status' => $user['status'],
-                'balance' => (float)$user['balance'],
-                'device' => $user['device'],
-                'role' => $user['role']
-            ];
-        }, $users);
-        
-        echo json_encode($result);
+        echo json_encode($users);
     }
 }
 
@@ -66,21 +38,26 @@ if ($method === 'GET') {
 else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->id) && !empty($data->username) && !empty($data->email)) {
-        $query = "INSERT INTO USER (id, username, nom, prenom, tel, email, status, balance, device, role) 
-                  VALUES (:id, :username, :nom, :prenom, :tel, :email, :status, :balance, :device, :role)";
+    if (!empty($data->ID) && !empty($data->USERNAME)) {
+        $query = "INSERT INTO USER (ID, USERNAME, NOM, PRENOM, TEL, VILLE, ADRESSE, STATUS, 
+                  BALANCE, FIDILIO, DEVICE, EMAIL, PASSWORD) 
+                  VALUES (:id, :username, :nom, :prenom, :tel, :ville, :adresse, :status, 
+                  :balance, :fidilio, :device, :email, :password)";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":id", $data->id);
-        $stmt->bindParam(":username", $data->username);
-        $stmt->bindParam(":nom", $data->nom);
-        $stmt->bindParam(":prenom", $data->prenom);
-        $stmt->bindParam(":tel", $data->tel);
-        $stmt->bindParam(":email", $data->email);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":balance", $data->balance);
-        $stmt->bindParam(":device", $data->device);
-        $stmt->bindParam(":role", $data->role);
+        $stmt->bindParam(":id", $data->ID);
+        $stmt->bindParam(":username", $data->USERNAME);
+        $stmt->bindParam(":nom", $data->NOM);
+        $stmt->bindParam(":prenom", $data->PRENOM);
+        $stmt->bindParam(":tel", $data->TEL);
+        $stmt->bindParam(":ville", $data->VILLE);
+        $stmt->bindParam(":adresse", $data->ADRESSE);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":balance", $data->BALANCE);
+        $stmt->bindParam(":fidilio", $data->FIDILIO);
+        $stmt->bindParam(":device", $data->DEVICE);
+        $stmt->bindParam(":email", $data->EMAIL);
+        $stmt->bindParam(":password", $data->PASSWORD);
         
         if ($stmt->execute()) {
             http_response_code(201);
@@ -99,23 +76,27 @@ else if ($method === 'POST') {
 else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->id)) {
+    if (!empty($data->ID)) {
         $query = "UPDATE USER 
-                  SET username = :username, nom = :nom, prenom = :prenom, tel = :tel,
-                      email = :email, status = :status, balance = :balance, device = :device, role = :role
-                  WHERE id = :id";
+                  SET USERNAME = :username, NOM = :nom, PRENOM = :prenom, TEL = :tel,
+                      VILLE = :ville, ADRESSE = :adresse, STATUS = :status, BALANCE = :balance,
+                      FIDILIO = :fidilio, DEVICE = :device, EMAIL = :email, PASSWORD = :password
+                  WHERE ID = :id";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":id", $data->id);
-        $stmt->bindParam(":username", $data->username);
-        $stmt->bindParam(":nom", $data->nom);
-        $stmt->bindParam(":prenom", $data->prenom);
-        $stmt->bindParam(":tel", $data->tel);
-        $stmt->bindParam(":email", $data->email);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":balance", $data->balance);
-        $stmt->bindParam(":device", $data->device);
-        $stmt->bindParam(":role", $data->role);
+        $stmt->bindParam(":id", $data->ID);
+        $stmt->bindParam(":username", $data->USERNAME);
+        $stmt->bindParam(":nom", $data->NOM);
+        $stmt->bindParam(":prenom", $data->PRENOM);
+        $stmt->bindParam(":tel", $data->TEL);
+        $stmt->bindParam(":ville", $data->VILLE);
+        $stmt->bindParam(":adresse", $data->ADRESSE);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":balance", $data->BALANCE);
+        $stmt->bindParam(":fidilio", $data->FIDILIO);
+        $stmt->bindParam(":device", $data->DEVICE);
+        $stmt->bindParam(":email", $data->EMAIL);
+        $stmt->bindParam(":password", $data->PASSWORD);
         
         if ($stmt->execute()) {
             echo json_encode(["message" => "User updated successfully"]);
@@ -134,7 +115,7 @@ else if ($method === 'DELETE') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "DELETE FROM USER WHERE id = :id";
+        $query = "DELETE FROM USER WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         

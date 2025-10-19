@@ -13,54 +13,24 @@ if ($method === 'GET') {
     $sim_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($sim_id) {
-        $query = "SELECT * FROM SIM_CARD WHERE id = :id";
+        $query = "SELECT * FROM SIM_CARD WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $sim_id);
         $stmt->execute();
         $sim = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($sim) {
-            $result = [
-                'id' => (int)$sim['id'],
-                'operator' => $sim['operator'],
-                'number' => $sim['number'],
-                'todayActivations' => (int)$sim['today_activations'],
-                'todayTopups' => (int)$sim['today_topups'],
-                'connected' => $sim['connected'],
-                'balance' => (float)$sim['balance'],
-                'activationStatus' => $sim['activation_status'],
-                'topupStatus' => $sim['topup_status'],
-                'device' => $sim['device'],
-                'lastConnect' => (int)$sim['last_connect']
-            ];
-            echo json_encode($result);
+            echo json_encode($sim);
         } else {
             http_response_code(404);
             echo json_encode(["message" => "SIM card not found"]);
         }
     } else {
-        $query = "SELECT * FROM SIM_CARD ORDER BY last_connect DESC";
+        $query = "SELECT * FROM SIM_CARD ORDER BY LAST_CONNECT DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $sims = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $result = array_map(function($sim) {
-            return [
-                'id' => (int)$sim['id'],
-                'operator' => $sim['operator'],
-                'number' => $sim['number'],
-                'todayActivations' => (int)$sim['today_activations'],
-                'todayTopups' => (int)$sim['today_topups'],
-                'connected' => $sim['connected'],
-                'balance' => (float)$sim['balance'],
-                'activationStatus' => $sim['activation_status'],
-                'topupStatus' => $sim['topup_status'],
-                'device' => $sim['device'],
-                'lastConnect' => (int)$sim['last_connect']
-            ];
-        }, $sims);
-        
-        echo json_encode($result);
+        echo json_encode($sims);
     }
 }
 
@@ -68,23 +38,30 @@ if ($method === 'GET') {
 else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->operator) && !empty($data->number)) {
-        $query = "INSERT INTO SIM_CARD (operator, number, today_activations, today_topups, connected, 
-                  balance, activation_status, topup_status, device, last_connect) 
-                  VALUES (:operator, :number, :today_activations, :today_topups, :connected, 
-                  :balance, :activation_status, :topup_status, :device, :last_connect)";
+    if (!empty($data->OPERATOR)) {
+        $query = "INSERT INTO SIM_CARD (OPERATOR, TODAY_NB_ACTIVATION, TODAY_NB_TOPUP, CONNECTED, 
+                  BALANCE, CHARGED, ACTIVATION_STATUS, TOPUP_STATUS, DEVICE, LAST_CONNECT, TIME, 
+                  PIN, NUMBER, PUK, PIN2) 
+                  VALUES (:operator, :today_nb_activation, :today_nb_topup, :connected, 
+                  :balance, :charged, :activation_status, :topup_status, :device, :last_connect, :time,
+                  :pin, :number, :puk, :pin2)";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":number", $data->number);
-        $stmt->bindParam(":today_activations", $data->todayActivations);
-        $stmt->bindParam(":today_topups", $data->todayTopups);
-        $stmt->bindParam(":connected", $data->connected);
-        $stmt->bindParam(":balance", $data->balance);
-        $stmt->bindParam(":activation_status", $data->activationStatus);
-        $stmt->bindParam(":topup_status", $data->topupStatus);
-        $stmt->bindParam(":device", $data->device);
-        $stmt->bindParam(":last_connect", $data->lastConnect);
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":today_nb_activation", $data->TODAY_NB_ACTIVATION);
+        $stmt->bindParam(":today_nb_topup", $data->TODAY_NB_TOPUP);
+        $stmt->bindParam(":connected", $data->CONNECTED);
+        $stmt->bindParam(":balance", $data->BALANCE);
+        $stmt->bindParam(":charged", $data->CHARGED);
+        $stmt->bindParam(":activation_status", $data->ACTIVATION_STATUS);
+        $stmt->bindParam(":topup_status", $data->TOPUP_STATUS);
+        $stmt->bindParam(":device", $data->DEVICE);
+        $stmt->bindParam(":last_connect", $data->LAST_CONNECT);
+        $stmt->bindParam(":time", $data->TIME);
+        $stmt->bindParam(":pin", $data->PIN);
+        $stmt->bindParam(":number", $data->NUMBER);
+        $stmt->bindParam(":puk", $data->PUK);
+        $stmt->bindParam(":pin2", $data->PIN2);
         
         if ($stmt->execute()) {
             http_response_code(201);
@@ -103,26 +80,32 @@ else if ($method === 'POST') {
 else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->id)) {
+    if (!empty($data->ID)) {
         $query = "UPDATE SIM_CARD 
-                  SET operator = :operator, number = :number, today_activations = :today_activations,
-                      today_topups = :today_topups, connected = :connected, balance = :balance,
-                      activation_status = :activation_status, topup_status = :topup_status,
-                      device = :device, last_connect = :last_connect
-                  WHERE id = :id";
+                  SET OPERATOR = :operator, TODAY_NB_ACTIVATION = :today_nb_activation,
+                      TODAY_NB_TOPUP = :today_nb_topup, CONNECTED = :connected, BALANCE = :balance,
+                      CHARGED = :charged, ACTIVATION_STATUS = :activation_status, 
+                      TOPUP_STATUS = :topup_status, DEVICE = :device, LAST_CONNECT = :last_connect,
+                      TIME = :time, PIN = :pin, NUMBER = :number, PUK = :puk, PIN2 = :pin2
+                  WHERE ID = :id";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":id", $data->id);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":number", $data->number);
-        $stmt->bindParam(":today_activations", $data->todayActivations);
-        $stmt->bindParam(":today_topups", $data->todayTopups);
-        $stmt->bindParam(":connected", $data->connected);
-        $stmt->bindParam(":balance", $data->balance);
-        $stmt->bindParam(":activation_status", $data->activationStatus);
-        $stmt->bindParam(":topup_status", $data->topupStatus);
-        $stmt->bindParam(":device", $data->device);
-        $stmt->bindParam(":last_connect", $data->lastConnect);
+        $stmt->bindParam(":id", $data->ID);
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":today_nb_activation", $data->TODAY_NB_ACTIVATION);
+        $stmt->bindParam(":today_nb_topup", $data->TODAY_NB_TOPUP);
+        $stmt->bindParam(":connected", $data->CONNECTED);
+        $stmt->bindParam(":balance", $data->BALANCE);
+        $stmt->bindParam(":charged", $data->CHARGED);
+        $stmt->bindParam(":activation_status", $data->ACTIVATION_STATUS);
+        $stmt->bindParam(":topup_status", $data->TOPUP_STATUS);
+        $stmt->bindParam(":device", $data->DEVICE);
+        $stmt->bindParam(":last_connect", $data->LAST_CONNECT);
+        $stmt->bindParam(":time", $data->TIME);
+        $stmt->bindParam(":pin", $data->PIN);
+        $stmt->bindParam(":number", $data->NUMBER);
+        $stmt->bindParam(":puk", $data->PUK);
+        $stmt->bindParam(":pin2", $data->PIN2);
         
         if ($stmt->execute()) {
             echo json_encode(["message" => "SIM card updated successfully"]);
@@ -141,7 +124,7 @@ else if ($method === 'DELETE') {
     $sim_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($sim_id) {
-        $query = "DELETE FROM SIM_CARD WHERE id = :id";
+        $query = "DELETE FROM SIM_CARD WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $sim_id);
         

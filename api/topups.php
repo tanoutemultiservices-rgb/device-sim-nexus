@@ -13,50 +13,24 @@ if ($method === 'GET') {
     $topup_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($topup_id) {
-        $query = "SELECT * FROM TOPUP WHERE id = :id";
+        $query = "SELECT * FROM TOPUP WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $topup_id);
         $stmt->execute();
         $topup = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($topup) {
-            $result = [
-                'id' => (int)$topup['id'],
-                'dateOperation' => (int)$topup['date_operation'],
-                'operator' => $topup['operator'],
-                'montant' => (float)$topup['montant'],
-                'phoneNumber' => $topup['phone_number'],
-                'status' => $topup['status'],
-                'user' => $topup['user'],
-                'newBalance' => (float)$topup['new_balance'],
-                'msgResponse' => $topup['msg_response']
-            ];
-            echo json_encode($result);
+            echo json_encode($topup);
         } else {
             http_response_code(404);
             echo json_encode(["message" => "Top-up not found"]);
         }
     } else {
-        $query = "SELECT * FROM TOPUP ORDER BY date_operation DESC";
+        $query = "SELECT * FROM TOPUP ORDER BY DATE_OPERATION DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $topups = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $result = array_map(function($topup) {
-            return [
-                'id' => (int)$topup['id'],
-                'dateOperation' => (int)$topup['date_operation'],
-                'operator' => $topup['operator'],
-                'montant' => (float)$topup['montant'],
-                'phoneNumber' => $topup['phone_number'],
-                'status' => $topup['status'],
-                'user' => $topup['user'],
-                'newBalance' => (float)$topup['new_balance'],
-                'msgResponse' => $topup['msg_response']
-            ];
-        }, $topups);
-        
-        echo json_encode($result);
+        echo json_encode($topups);
     }
 }
 
@@ -64,22 +38,33 @@ if ($method === 'GET') {
 else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->operator) && !empty($data->phoneNumber) && !empty($data->user)) {
-        $query = "INSERT INTO TOPUP (date_operation, operator, montant, phone_number, status, user, new_balance, msg_response) 
-                  VALUES (:date_operation, :operator, :montant, :phone_number, :status, :user, :new_balance, :msg_response)";
+    if (!empty($data->OPERATOR) && !empty($data->PHONE_NUMBER)) {
+        $query = "INSERT INTO TOPUP (DATE_OPERATION, OPERATOR, MONTANT, PHONE_NUMBER, OFFRE, 
+                  CODE_USSD, DATE_RESPONSE, MSG_RESPONSE, STATUS, USER, SIM_CARD, MSG_TO_RETURN, NEW_BALANCE) 
+                  VALUES (:date_operation, :operator, :montant, :phone_number, :offre, :code_ussd, 
+                  :date_response, :msg_response, :status, :user, :sim_card, :msg_to_return, :new_balance)";
         
         $stmt = $db->prepare($query);
-        $dateOp = $data->dateOperation ?? time() * 1000;
+        $dateOp = $data->DATE_OPERATION ?? time() * 1000;
         $stmt->bindParam(":date_operation", $dateOp);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":montant", $data->montant);
-        $stmt->bindParam(":phone_number", $data->phoneNumber);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":user", $data->user);
-        $newBal = $data->newBalance ?? 0;
-        $stmt->bindParam(":new_balance", $newBal);
-        $msgResp = $data->msgResponse ?? "";
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":montant", $data->MONTANT);
+        $stmt->bindParam(":phone_number", $data->PHONE_NUMBER);
+        $offre = $data->OFFRE ?? "";
+        $stmt->bindParam(":offre", $offre);
+        $stmt->bindParam(":code_ussd", $data->CODE_USSD);
+        $dateResp = $data->DATE_RESPONSE ?? 0;
+        $stmt->bindParam(":date_response", $dateResp);
+        $msgResp = $data->MSG_RESPONSE ?? "";
         $stmt->bindParam(":msg_response", $msgResp);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":user", $data->USER);
+        $simCard = $data->SIM_CARD ?? 0;
+        $stmt->bindParam(":sim_card", $simCard);
+        $msgToReturn = $data->MSG_TO_RETURN ?? "";
+        $stmt->bindParam(":msg_to_return", $msgToReturn);
+        $newBal = $data->NEW_BALANCE ?? 0;
+        $stmt->bindParam(":new_balance", $newBal);
         
         if ($stmt->execute()) {
             http_response_code(201);
@@ -98,20 +83,29 @@ else if ($method === 'POST') {
 else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->id)) {
+    if (!empty($data->ID)) {
         $query = "UPDATE TOPUP 
-                  SET operator = :operator, montant = :montant, phone_number = :phone_number,
-                      status = :status, new_balance = :new_balance, msg_response = :msg_response
-                  WHERE id = :id";
+                  SET OPERATOR = :operator, MONTANT = :montant, PHONE_NUMBER = :phone_number,
+                      OFFRE = :offre, CODE_USSD = :code_ussd, STATUS = :status, 
+                      DATE_RESPONSE = :date_response, MSG_RESPONSE = :msg_response,
+                      USER = :user, SIM_CARD = :sim_card, MSG_TO_RETURN = :msg_to_return,
+                      NEW_BALANCE = :new_balance
+                  WHERE ID = :id";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":id", $data->id);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":montant", $data->montant);
-        $stmt->bindParam(":phone_number", $data->phoneNumber);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":new_balance", $data->newBalance);
-        $stmt->bindParam(":msg_response", $data->msgResponse);
+        $stmt->bindParam(":id", $data->ID);
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":montant", $data->MONTANT);
+        $stmt->bindParam(":phone_number", $data->PHONE_NUMBER);
+        $stmt->bindParam(":offre", $data->OFFRE);
+        $stmt->bindParam(":code_ussd", $data->CODE_USSD);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":date_response", $data->DATE_RESPONSE);
+        $stmt->bindParam(":msg_response", $data->MSG_RESPONSE);
+        $stmt->bindParam(":user", $data->USER);
+        $stmt->bindParam(":sim_card", $data->SIM_CARD);
+        $stmt->bindParam(":msg_to_return", $data->MSG_TO_RETURN);
+        $stmt->bindParam(":new_balance", $data->NEW_BALANCE);
         
         if ($stmt->execute()) {
             echo json_encode(["message" => "Top-up updated successfully"]);
@@ -130,7 +124,7 @@ else if ($method === 'DELETE') {
     $topup_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($topup_id) {
-        $query = "DELETE FROM TOPUP WHERE id = :id";
+        $query = "DELETE FROM TOPUP WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $topup_id);
         

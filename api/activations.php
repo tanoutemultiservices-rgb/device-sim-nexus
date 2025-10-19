@@ -13,50 +13,24 @@ if ($method === 'GET') {
     $activation_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($activation_id) {
-        $query = "SELECT * FROM ACTIVATION WHERE id = :id";
+        $query = "SELECT * FROM ACTIVATION WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $activation_id);
         $stmt->execute();
         $activation = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($activation) {
-            $result = [
-                'id' => (int)$activation['id'],
-                'dateOperation' => (int)$activation['date_operation'],
-                'operator' => $activation['operator'],
-                'phoneNumber' => $activation['phone_number'],
-                'ussdCode' => $activation['ussd_code'],
-                'status' => $activation['status'],
-                'user' => $activation['user'],
-                'dateResponse' => (int)$activation['date_response'],
-                'msgResponse' => $activation['msg_response']
-            ];
-            echo json_encode($result);
+            echo json_encode($activation);
         } else {
             http_response_code(404);
             echo json_encode(["message" => "Activation not found"]);
         }
     } else {
-        $query = "SELECT * FROM ACTIVATION ORDER BY date_operation DESC";
+        $query = "SELECT * FROM ACTIVATION ORDER BY DATE_OPERATION DESC";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $activations = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        $result = array_map(function($activation) {
-            return [
-                'id' => (int)$activation['id'],
-                'dateOperation' => (int)$activation['date_operation'],
-                'operator' => $activation['operator'],
-                'phoneNumber' => $activation['phone_number'],
-                'ussdCode' => $activation['ussd_code'],
-                'status' => $activation['status'],
-                'user' => $activation['user'],
-                'dateResponse' => (int)$activation['date_response'],
-                'msgResponse' => $activation['msg_response']
-            ];
-        }, $activations);
-        
-        echo json_encode($result);
+        echo json_encode($activations);
     }
 }
 
@@ -64,22 +38,30 @@ if ($method === 'GET') {
 else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->operator) && !empty($data->phoneNumber) && !empty($data->user)) {
-        $query = "INSERT INTO ACTIVATION (date_operation, operator, phone_number, ussd_code, status, user, date_response, msg_response) 
-                  VALUES (:date_operation, :operator, :phone_number, :ussd_code, :status, :user, :date_response, :msg_response)";
+    if (!empty($data->OPERATOR) && !empty($data->PHONE_NUMBER)) {
+        $query = "INSERT INTO ACTIVATION (DATE_OPERATION, OPERATOR, SERIE, PHONE_NUMBER, PUK, 
+                  CODE_USSD, DATE_RESPONSE, MSG_RESPONSE, STATUS, USER, SIM_CARD, MSG_TO_RETURN) 
+                  VALUES (:date_operation, :operator, :serie, :phone_number, :puk, :code_ussd, 
+                  :date_response, :msg_response, :status, :user, :sim_card, :msg_to_return)";
         
         $stmt = $db->prepare($query);
-        $dateOp = $data->dateOperation ?? time() * 1000;
+        $dateOp = $data->DATE_OPERATION ?? time() * 1000;
         $stmt->bindParam(":date_operation", $dateOp);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":phone_number", $data->phoneNumber);
-        $stmt->bindParam(":ussd_code", $data->ussdCode);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":user", $data->user);
-        $dateResp = $data->dateResponse ?? 0;
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":serie", $data->SERIE);
+        $stmt->bindParam(":phone_number", $data->PHONE_NUMBER);
+        $stmt->bindParam(":puk", $data->PUK);
+        $stmt->bindParam(":code_ussd", $data->CODE_USSD);
+        $dateResp = $data->DATE_RESPONSE ?? 0;
         $stmt->bindParam(":date_response", $dateResp);
-        $msgResp = $data->msgResponse ?? "";
+        $msgResp = $data->MSG_RESPONSE ?? "";
         $stmt->bindParam(":msg_response", $msgResp);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":user", $data->USER);
+        $simCard = $data->SIM_CARD ?? 0;
+        $stmt->bindParam(":sim_card", $simCard);
+        $msgToReturn = $data->MSG_TO_RETURN ?? "";
+        $stmt->bindParam(":msg_to_return", $msgToReturn);
         
         if ($stmt->execute()) {
             http_response_code(201);
@@ -98,20 +80,27 @@ else if ($method === 'POST') {
 else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
-    if (!empty($data->id)) {
+    if (!empty($data->ID)) {
         $query = "UPDATE ACTIVATION 
-                  SET operator = :operator, phone_number = :phone_number, ussd_code = :ussd_code,
-                      status = :status, date_response = :date_response, msg_response = :msg_response
-                  WHERE id = :id";
+                  SET OPERATOR = :operator, SERIE = :serie, PHONE_NUMBER = :phone_number, 
+                      PUK = :puk, CODE_USSD = :code_ussd, STATUS = :status, 
+                      DATE_RESPONSE = :date_response, MSG_RESPONSE = :msg_response,
+                      USER = :user, SIM_CARD = :sim_card, MSG_TO_RETURN = :msg_to_return
+                  WHERE ID = :id";
         
         $stmt = $db->prepare($query);
-        $stmt->bindParam(":id", $data->id);
-        $stmt->bindParam(":operator", $data->operator);
-        $stmt->bindParam(":phone_number", $data->phoneNumber);
-        $stmt->bindParam(":ussd_code", $data->ussdCode);
-        $stmt->bindParam(":status", $data->status);
-        $stmt->bindParam(":date_response", $data->dateResponse);
-        $stmt->bindParam(":msg_response", $data->msgResponse);
+        $stmt->bindParam(":id", $data->ID);
+        $stmt->bindParam(":operator", $data->OPERATOR);
+        $stmt->bindParam(":serie", $data->SERIE);
+        $stmt->bindParam(":phone_number", $data->PHONE_NUMBER);
+        $stmt->bindParam(":puk", $data->PUK);
+        $stmt->bindParam(":code_ussd", $data->CODE_USSD);
+        $stmt->bindParam(":status", $data->STATUS);
+        $stmt->bindParam(":date_response", $data->DATE_RESPONSE);
+        $stmt->bindParam(":msg_response", $data->MSG_RESPONSE);
+        $stmt->bindParam(":user", $data->USER);
+        $stmt->bindParam(":sim_card", $data->SIM_CARD);
+        $stmt->bindParam(":msg_to_return", $data->MSG_TO_RETURN);
         
         if ($stmt->execute()) {
             echo json_encode(["message" => "Activation updated successfully"]);
@@ -130,7 +119,7 @@ else if ($method === 'DELETE') {
     $activation_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($activation_id) {
-        $query = "DELETE FROM ACTIVATION WHERE id = :id";
+        $query = "DELETE FROM ACTIVATION WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $activation_id);
         
