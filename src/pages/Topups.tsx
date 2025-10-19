@@ -98,7 +98,7 @@ export default function Topups() {
 
   const filteredTopups = topups.filter(topup => {
     // Filter by user role
-    if (user?.role === 'CUSTOMER' && topup.USER !== user.id) {
+    if (user?.ROLE === 'CUSTOMER' && topup.USER !== user.ID) {
       return false;
     }
 
@@ -185,11 +185,11 @@ export default function Topups() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">شحن الرصيد</h1>
           <p className="text-muted-foreground mt-2">
-            {user?.role === 'CUSTOMER' ? 'مراقبة عمليات الشحن الخاصة بك' : 'مراقبة عمليات إعادة شحن الرصيد'}
+            {user?.ROLE === 'CUSTOMER' ? 'مراقبة عمليات الشحن الخاصة بك' : 'مراقبة عمليات إعادة شحن الرصيد'}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {user?.role === 'ADMIN' && (
+          {user?.ROLE === 'ADMIN' && (
             <Button
               variant="destructive"
               onClick={cleanPending}

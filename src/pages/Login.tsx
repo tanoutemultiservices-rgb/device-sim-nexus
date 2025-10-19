@@ -35,7 +35,7 @@ export default function Login() {
     try {
       const users = await usersApi.getAll() as any[];
       const foundUser = users.find(
-        (u: any) => u.tel === tel && u.password === password && u.status === 'ACCEPT'
+        (u: any) => u.TEL === tel && u.PASSWORD === password && u.STATUS === 'ACCEPT'
       );
 
       if (!foundUser) {
@@ -44,13 +44,13 @@ export default function Login() {
         return;
       }
 
-      await login(foundUser.id);
-      toast.success(`مرحباً ${foundUser.username}`);
+      await login(foundUser.ID);
+      toast.success(`مرحباً ${foundUser.USERNAME}`);
       
       // Redirect based on role
-      if (foundUser.role === 'ADMIN') {
+      if (foundUser.ROLE === 'ADMIN') {
         navigate('/');
-      } else if (foundUser.role === 'CUSTOMER') {
+      } else if (foundUser.ROLE === 'CUSTOMER') {
         navigate('/activations');
       } else {
         navigate('/');

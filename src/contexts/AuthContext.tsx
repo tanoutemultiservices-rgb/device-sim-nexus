@@ -2,17 +2,17 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { usersApi } from '@/services/api';
 
 interface User {
-  id: string;
-  username: string;
-  nom: string;
-  prenom: string;
-  tel: string;
-  email: string;
-  password: string;
-  status: string;
-  balance: number;
-  device: string;
-  role: 'ADMIN' | 'EXECUTOR' | 'CUSTOMER';
+  ID: string;
+  USERNAME: string;
+  NOM: string;
+  PRENOM: string;
+  TEL: string;
+  EMAIL: string;
+  PASSWORD: string;
+  STATUS: string;
+  BALANCE: number;
+  DEVICE: string;
+  ROLE: 'ADMIN' | 'EXECUTOR' | 'CUSTOMER';
 }
 
 interface AuthContextType {
@@ -40,7 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loadUser = async (userId: string) => {
     try {
       const users = await usersApi.getAll() as any[];
-      const foundUser = users.find((u: any) => u.id === userId);
+      const foundUser = users.find((u: any) => u.ID === userId);
       if (foundUser) {
         setUser(foundUser);
       } else {
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userId: string) => {
     try {
       const users = await usersApi.getAll() as any[];
-      const foundUser = users.find((u: any) => u.id === userId);
+      const foundUser = users.find((u: any) => u.ID === userId);
       if (foundUser) {
         setUser(foundUser);
         localStorage.setItem('userId', userId);
@@ -77,9 +77,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         user,
         login,
         logout,
-        isAdmin: user?.role === 'ADMIN',
-        isCustomer: user?.role === 'CUSTOMER',
-        isExecutor: user?.role === 'EXECUTOR',
+        isAdmin: user?.ROLE === 'ADMIN',
+        isCustomer: user?.ROLE === 'CUSTOMER',
+        isExecutor: user?.ROLE === 'EXECUTOR',
       }}
     >
       {children}

@@ -13,7 +13,7 @@ if ($method === 'GET') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "SELECT id, username, nom, prenom, tel, email, password, status, balance, device, role FROM users WHERE id = :id";
+        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE FROM USER WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         $stmt->execute();
@@ -26,7 +26,7 @@ if ($method === 'GET') {
             echo json_encode(["message" => "User not found"]);
         }
     } else {
-        $query = "SELECT id, username, nom, prenom, tel, email, password, status, balance, device, role FROM users ORDER BY username";
+        $query = "SELECT ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE FROM USER ORDER BY USERNAME";
         $stmt = $db->prepare($query);
         $stmt->execute();
         $users = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -39,7 +39,7 @@ else if ($method === 'POST') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->ID) && !empty($data->USERNAME)) {
-        $query = "INSERT INTO users (id, username, nom, prenom, tel, email, password, status, balance, device, role) 
+        $query = "INSERT INTO USER (ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALANCE, DEVICE, ROLE) 
                   VALUES (:id, :username, :nom, :prenom, :tel, :email, :password, :status, :balance, :device, :role)";
         
         $stmt = $db->prepare($query);
@@ -73,11 +73,11 @@ else if ($method === 'PUT') {
     $data = json_decode(file_get_contents("php://input"));
     
     if (!empty($data->ID)) {
-        $query = "UPDATE users 
-                  SET username = :username, nom = :nom, prenom = :prenom, tel = :tel,
-                      email = :email, password = :password, status = :status, balance = :balance,
-                      device = :device, role = :role
-                  WHERE id = :id";
+        $query = "UPDATE USER 
+                  SET USERNAME = :username, NOM = :nom, PRENOM = :prenom, TEL = :tel,
+                      EMAIL = :email, PASSWORD = :password, STATUS = :status, BALANCE = :balance,
+                      DEVICE = :device, ROLE = :role
+                  WHERE ID = :id";
         
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $data->ID);
@@ -109,7 +109,7 @@ else if ($method === 'DELETE') {
     $user_id = isset($_GET['id']) ? $_GET['id'] : null;
     
     if ($user_id) {
-        $query = "DELETE FROM users WHERE id = :id";
+        $query = "DELETE FROM USER WHERE ID = :id";
         $stmt = $db->prepare($query);
         $stmt->bindParam(":id", $user_id);
         

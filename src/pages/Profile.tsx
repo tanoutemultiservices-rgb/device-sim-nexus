@@ -12,21 +12,21 @@ export default function Profile() {
   const { user: currentUser, login } = useAuth();
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
-    USERNAME: currentUser?.username || "",
-    NOM: currentUser?.nom || "",
-    PRENOM: currentUser?.prenom || "",
-    EMAIL: currentUser?.email || "",
-    TEL: currentUser?.tel || "",
+    USERNAME: currentUser?.USERNAME || "",
+    NOM: currentUser?.NOM || "",
+    PRENOM: currentUser?.PRENOM || "",
+    EMAIL: currentUser?.EMAIL || "",
+    TEL: currentUser?.TEL || "",
   });
 
   useEffect(() => {
     if (currentUser) {
       setFormData({
-        USERNAME: currentUser.username || "",
-        NOM: currentUser.nom || "",
-        PRENOM: currentUser.prenom || "",
-        EMAIL: currentUser.email || "",
-        TEL: currentUser.tel || "",
+        USERNAME: currentUser.USERNAME || "",
+        NOM: currentUser.NOM || "",
+        PRENOM: currentUser.PRENOM || "",
+        EMAIL: currentUser.EMAIL || "",
+        TEL: currentUser.TEL || "",
       });
     }
   }, [currentUser]);
@@ -50,23 +50,23 @@ export default function Profile() {
     
     try {
       await usersApi.update({
-        ID: currentUser.id,
+        ID: currentUser.ID,
         USERNAME: formData.USERNAME,
         NOM: formData.NOM,
         PRENOM: formData.PRENOM,
         EMAIL: formData.EMAIL,
         TEL: formData.TEL,
-        PASSWORD: currentUser.password,
-        STATUS: currentUser.status,
-        BALANCE: currentUser.balance,
-        DEVICE: currentUser.device,
-        ROLE: currentUser.role,
+        PASSWORD: currentUser.PASSWORD,
+        STATUS: currentUser.STATUS,
+        BALANCE: currentUser.BALANCE,
+        DEVICE: currentUser.DEVICE,
+        ROLE: currentUser.ROLE,
       });
       
       toast.success("تم تحديث الملف الشخصي بنجاح");
       
       // Refresh user data
-      await login(currentUser.id);
+      await login(currentUser.ID);
       
     } catch (error) {
       console.error('Error updating profile:', error);
@@ -107,7 +107,7 @@ export default function Profile() {
           </CardHeader>
           <CardContent>
             <div className="text-3xl font-bold text-primary">
-              {currentUser?.balance || "0.000"} <span className="text-lg">درهم</span>
+              {currentUser?.BALANCE || "0.000"} <span className="text-lg">درهم</span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">رصيدك الحالي</p>
           </CardContent>
@@ -121,12 +121,12 @@ export default function Profile() {
           <CardContent>
             <div className="flex items-center gap-2">
               <div className={`w-3 h-3 rounded-full ${
-                currentUser?.status === 'ACCEPT' ? 'bg-success' : 
-                currentUser?.status === 'PENDING' ? 'bg-warning' : 'bg-destructive'
+                currentUser?.STATUS === 'ACCEPT' ? 'bg-success' : 
+                currentUser?.STATUS === 'PENDING' ? 'bg-warning' : 'bg-destructive'
               }`}></div>
               <span className="text-lg font-semibold">
-                {currentUser?.status === 'ACCEPT' ? 'مفعل' :
-                 currentUser?.status === 'PENDING' ? 'قيد المراجعة' : 'محظور'}
+                {currentUser?.STATUS === 'ACCEPT' ? 'مفعل' :
+                 currentUser?.STATUS === 'PENDING' ? 'قيد المراجعة' : 'محظور'}
               </span>
             </div>
             <p className="text-sm text-muted-foreground mt-2">حالة الحساب</p>
@@ -139,8 +139,8 @@ export default function Profile() {
             <CardTitle>الجهاز</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-sm font-mono truncate" title={currentUser?.device}>
-              {currentUser?.device || "لا يوجد"}
+            <div className="text-sm font-mono truncate" title={currentUser?.DEVICE}>
+              {currentUser?.DEVICE || "لا يوجد"}
             </div>
             <p className="text-sm text-muted-foreground mt-2">معرف الجهاز</p>
           </CardContent>
@@ -232,7 +232,7 @@ export default function Profile() {
               <div className="space-y-2">
                 <Label>الدور</Label>
                 <Input
-                  value={currentUser.role}
+                  value={currentUser.ROLE}
                   disabled
                   className="bg-muted"
                 />

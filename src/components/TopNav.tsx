@@ -28,7 +28,7 @@ export function TopNav() {
     return null;
   }
 
-  const filteredMenuItems = menuItems.filter(item => item.roles.includes(user.role));
+  const filteredMenuItems = menuItems.filter(item => item.roles.includes(user.ROLE));
 
   return (
     <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
@@ -63,7 +63,7 @@ export function TopNav() {
             className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground"
           >
             <UserCircle className="h-5 w-5" />
-            <span>{user.username} ({user.role})</span>
+            <span>{user.USERNAME} ({user.ROLE})</span>
           </NavLink>
           <Button onClick={handleLogout} variant="ghost" size="sm">
             <LogOut className="h-4 w-4" />

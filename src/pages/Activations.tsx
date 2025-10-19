@@ -98,7 +98,7 @@ export default function Activations() {
   const filteredActivations = activations
     .filter(activation => {
       // Filter by user role
-      if (user?.role === 'CUSTOMER' && activation.USER !== user.id) {
+      if (user?.ROLE === 'CUSTOMER' && activation.USER !== user.ID) {
         return false;
       }
 
@@ -164,11 +164,11 @@ export default function Activations() {
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">تفعيلات SIM</h1>
           <p className="text-muted-foreground mt-2">
-            {user?.role === 'CUSTOMER' ? 'مراقبة عمليات التفعيل الخاصة بك' : 'مراقبة عمليات تفعيل بطاقات SIM'}
+            {user?.ROLE === 'CUSTOMER' ? 'مراقبة عمليات التفعيل الخاصة بك' : 'مراقبة عمليات تفعيل بطاقات SIM'}
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {user?.role === 'ADMIN' && (
+          {user?.ROLE === 'ADMIN' && (
             <Button
               variant="destructive"
               onClick={cleanPending}
