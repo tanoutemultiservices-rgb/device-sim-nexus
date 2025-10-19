@@ -10,6 +10,8 @@ import SimCards from "./pages/SimCards";
 import Users from "./pages/Users";
 import Activations from "./pages/Activations";
 import Topups from "./pages/Topups";
+import TopupRequest from "./pages/TopupRequest";
+import ActivationRequest from "./pages/ActivationRequest";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +32,8 @@ const App = () => (
               <Route path="/users" element={<Users />} />
               <Route path="/activations" element={<Activations />} />
               <Route path="/topups" element={<Topups />} />
+              <Route path="/topup-request" element={<TopupRequest />} />
+              <Route path="/activation-request" element={<ActivationRequest />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </main>

@@ -1,4 +1,4 @@
-import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins } from "lucide-react";
+import { LayoutDashboard, Smartphone, CreditCard, Users, PlayCircle, Coins, Plus } from "lucide-react";
 import { NavLink } from "react-router-dom";
 import { cn } from "@/lib/utils";
 
@@ -9,6 +9,8 @@ const menuItems = [
   { title: "المستخدمون", url: "/users", icon: Users },
   { title: "التفعيلات", url: "/activations", icon: PlayCircle },
   { title: "الشحنات", url: "/topups", icon: Coins },
+  { title: "طلب شحن", url: "/topup-request", icon: Plus },
+  { title: "طلب تفعيل", url: "/activation-request", icon: Plus },
 ];
 
 export function TopNav() {
