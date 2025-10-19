@@ -20,9 +20,9 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <div className="min-h-screen w-full">
+        <div className="min-h-screen w-full bg-background">
           <TopNav />
-          <main className="p-6">
+          <main className="p-6 animate-fade-in">
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/devices" element={<Devices />} />

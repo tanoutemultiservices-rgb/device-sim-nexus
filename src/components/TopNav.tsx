@@ -13,11 +13,11 @@ const menuItems = [
 
 export function TopNav() {
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-14 items-center px-6">
-        <div className="mr-8 flex items-center space-x-2">
+    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
+      <div className="flex h-16 items-center px-6">
+        <div className="mr-8 flex items-center space-x-3">
           <CreditCard className="h-6 w-6 text-primary" />
-          <span className="font-bold text-lg">Telecom Manager</span>
+          <span className="font-bold text-xl tracking-tight">Telecom Manager</span>
         </div>
         <div className="flex items-center space-x-1 flex-1">
           {menuItems.map((item) => (
@@ -27,10 +27,10 @@ export function TopNav() {
               end={item.url === "/"}
               className={({ isActive }) =>
                 cn(
-                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors",
+                  "flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-all duration-200",
                   isActive
-                    ? "bg-accent text-accent-foreground"
-                    : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:bg-secondary hover:text-foreground"
                 )
               }
             >
