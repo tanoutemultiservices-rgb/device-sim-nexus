@@ -133,7 +133,7 @@ export default function ActivationRequest() {
             </div>
 
             {/* Visual PUK Display */}
-            <div style="display:none;" className="flex justify-center gap-3 py-4">
+            <div style={{ display: 'none' }} className="flex justify-center gap-3 py-4">
               {[0, 1, 2, 3].map((index) => (
                 <div
                   key={index}
