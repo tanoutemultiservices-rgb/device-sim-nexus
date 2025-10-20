@@ -123,7 +123,7 @@ export default function ActivationRequest() {
       // Build CODE_USSD based on operator
       let codeUSSD = "";
       if (selectedOperator === "Orange MA") {
-        codeUSSD = `#555#,1,${phoneNumber},${pukCode},1,nom,prenom,AA5566`;
+        codeUSSD = `#555#,1,${phoneNumber},1,${pukCode},nom,prenom,AA5566`;
       } else if (selectedOperator === "inwi") {
         codeUSSD = `*1012*${phoneNumber}${pukCode}#,nom prenom,AA7878`;
       } else if (selectedOperator === "Maroc Telecom") {
