@@ -1,5 +1,5 @@
 // API Configuration
-const API_BASE_URL = 'http://chargi.store/apis/api-dashboard';
+const API_BASE_URL = 'https://chargi.store/apis/api-dashboard';
 
 export const API_ENDPOINTS = {
   devices: `${API_BASE_URL}/devices.php`,
