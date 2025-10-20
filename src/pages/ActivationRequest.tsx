@@ -34,8 +34,8 @@ export default function ActivationRequest() {
   const [pukCode, setPukCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [simCards, setSimCards] = useState<any[]>([]);
-const [currentUser, setCurrentUser] = useState<any>(null);
-const { user: authUser } = useAuth();
+  const [currentUser, setCurrentUser] = useState<any>(null);
+  const { user: authUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +44,7 @@ const { user: authUser } = useAuth();
         setSimCards(simData as any[]);
         setCurrentUser(authUser);
       } catch (error) {
-        console.error('Error fetching data:', error);
+        console.error("Error fetching data:", error);
         toast.error("خطأ في تحميل البيانات");
       }
     };
@@ -54,12 +54,12 @@ const { user: authUser } = useAuth();
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
         try {
-          const activation = await activationsApi.getById(activationId) as any;
-          
-          if (activation.MSG_TO_RETURN && activation.MSG_TO_RETURN.trim() !== '') {
+          const activation = (await activationsApi.getById(activationId)) as any;
+
+          if (activation.MSG_TO_RETURN && activation.MSG_TO_RETURN.trim() !== "") {
             clearInterval(interval);
-            
-            if (activation.STATUS === 'SUCCESS') {
+
+            if (activation.STATUS === "SUCCESS") {
               toast.success(activation.MSG_TO_RETURN);
             } else {
               toast.error(activation.MSG_TO_RETURN);
@@ -67,7 +67,7 @@ const { user: authUser } = useAuth();
             resolve();
           }
         } catch (error) {
-          console.error('Error polling activation:', error);
+          console.error("Error polling activation:", error);
         }
       }, 2000); // Poll every 2 seconds
 
@@ -101,16 +101,17 @@ const { user: authUser } = useAuth();
     }
 
     // Check if user has activation permission
-    if (currentUser.ACTIVATION !== 1 && currentUser.ACTIVATION !== '1') {
+    if (currentUser.ACTIVATION !== 1 && currentUser.ACTIVATION !== "1") {
       toast.error("ليس لديك صلاحية لطلب التفعيل");
       return;
     }
 
     // Find available SIM card with same operator and activation enabled
     const normalize = (s: any) => (s ?? "").toString().trim().toLowerCase();
-    const availableSim = simCards.find((sim: any) =>
-      normalize(sim.OPERATOR) === normalize(selectedOperator) &&
-      (sim.ACTIVATION_STATUS === 1 || sim.ACTIVATION_STATUS === "1")
+    const availableSim = simCards.find(
+      (sim: any) =>
+        normalize(sim.OPERATOR) === normalize(selectedOperator) &&
+        (sim.ACTIVATION_STATUS === 1 || sim.ACTIVATION_STATUS === "1"),
     );
     if (!availableSim) {
       toast.error(`لا توجد بطاقة SIM متاحة لشركة ${selectedOperator}`);
@@ -124,7 +125,7 @@ const { user: authUser } = useAuth();
       if (selectedOperator === "Orange MA") {
         codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
       } else if (selectedOperator === "inwi") {
-        codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
+        codeUSSD = `*1012*${phoneNumber}${pukCode}#,nom prenom,AA7878`;
       } else if (selectedOperator === "Maroc Telecom") {
         codeUSSD = `*100*${pukCode}*${phoneNumber}#`;
       }
@@ -133,19 +134,19 @@ const { user: authUser } = useAuth();
       const activationData = {
         DATE_OPERATION: Date.now(),
         OPERATOR: selectedOperator,
-        SERIE: '',
+        SERIE: "",
         PHONE_NUMBER: phoneNumber,
         PUK: pukCode,
         CODE_USSD: codeUSSD,
         DATE_RESPONSE: 0,
-        MSG_RESPONSE: '',
-        STATUS: 'PENDING',
+        MSG_RESPONSE: "",
+        STATUS: "PENDING",
         USER: currentUser.ID,
         SIM_CARD: availableSim.ID,
-        MSG_TO_RETURN: ''
+        MSG_TO_RETURN: "",
       };
-      
-      const response = await activationsApi.create(activationData) as any;
+
+      const response = (await activationsApi.create(activationData)) as any;
       const activationId = response.id;
 
       toast.info("جاري معالجة طلب التفعيل...");
@@ -162,7 +163,7 @@ const { user: authUser } = useAuth();
       const refreshed = await usersApi.getById(currentUser.ID);
       setCurrentUser(refreshed as any);
     } catch (error) {
-      console.error('Error submitting activation:', error);
+      console.error("Error submitting activation:", error);
       toast.error("حدث خطأ أثناء إرسال الطلب");
     } finally {
       setLoading(false);
