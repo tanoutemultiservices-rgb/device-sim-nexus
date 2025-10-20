@@ -7,6 +7,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Coins } from "lucide-react";
 import { toast } from "sonner";
 import { simCardsApi, topupsApi, usersApi } from "@/services/api";
+import { useAuth } from "@/contexts/AuthContext";
 import marocTelecomLogo from "@/assets/maroc-telecom-logo.png";
 import inwiLogo from "@/assets/inwi-logo.jpg";
 import orangeLogo from "@/assets/orange-logo.png";
@@ -26,31 +27,32 @@ const operators = [{
 const amounts = [5, 10, 20, 50, 100, 200];
 const offers = ["*1", "*2", "*3", "*6", "*22"];
 export default function TopupRequest() {
+  const { user: authUser } = useAuth();
   const [selectedOperator, setSelectedOperator] = useState("");
   const [selectedAmount, setSelectedAmount] = useState("");
   const [selectedOffer, setSelectedOffer] = useState("");
   const [phoneNumber, setPhoneNumber] = useState("");
   const [loading, setLoading] = useState(false);
   const [simCards, setSimCards] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [simData, userData] = await Promise.all([simCardsApi.getAll(), usersApi.getAll()]);
+        const simData = await simCardsApi.getAll();
         setSimCards(simData as any[]);
-        setUsers(userData as any[]);
 
-        // Get first active user for demo (in production, use authentication)
-        const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-        setCurrentUser(activeUser);
+        // Use authenticated user
+        if (authUser) {
+          setCurrentUser(authUser);
+        }
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error("خطأ في تحميل البيانات");
       }
     };
     fetchData();
-  }, []);
+  }, [authUser]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOperator) {
@@ -134,9 +136,10 @@ export default function TopupRequest() {
       setPhoneNumber("");
 
       // Refresh user data
-      const userData = await usersApi.getAll();
-      const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-      setCurrentUser(activeUser);
+      if (currentUser?.ID) {
+        const updatedUser = await usersApi.getById(currentUser.ID);
+        setCurrentUser(updatedUser);
+      }
     } catch (error) {
       console.error('Error submitting topup:', error);
       toast.error("حدث خطأ أثناء إرسال الطلب");
