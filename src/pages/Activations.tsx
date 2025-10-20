@@ -156,8 +156,10 @@ export default function Activations() {
                 <TableHead>التاريخ</TableHead>
                 <TableHead>المشغل</TableHead>
                 <TableHead>رقم الهاتف</TableHead>
-
+                <TableHead>المستخدم</TableHead>
+                <TableHead>تاريخ الرد</TableHead>
                 <TableHead>الحالة</TableHead>
+                <TableHead>الرسالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -167,9 +169,13 @@ export default function Activations() {
                   <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_OPERATION))}</TableCell>
                   <TableCell>{activation.OPERATOR}</TableCell>
                   <TableCell className="font-mono">{activation.PHONE_NUMBER}</TableCell>
-                  <TableCell className="font-mono text-sm text-primary">{activation.CODE_USSD || "N/A"}</TableCell>
+                  <TableCell className="font-mono text-xs">{activation.USER?.substring(0, 12)}...</TableCell>
+                  <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_RESPONSE || 0))}</TableCell>
                   <TableCell>
                     <StatusBadge status={activation.STATUS?.toLowerCase() as any} />
+                  </TableCell>
+                  <TableCell className="max-w-xs truncate text-sm">
+                    {activation.MSG_RESPONSE || "قيد الانتظار..."}
                   </TableCell>
                 </TableRow>
               ))}
