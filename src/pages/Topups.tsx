@@ -9,9 +9,7 @@ import { Coins, Trash2, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 export default function Topups() {
-  const {
-    user
-  } = useAuth();
+  const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
   const [topups, setTopups] = useState<any[]>([]);
   const [statusFilter, setStatusFilter] = useState("all");
@@ -38,7 +36,7 @@ export default function Topups() {
     return new Date(timestamp).toLocaleString("ar-MA");
   };
   const cleanPending = async () => {
-    const pendingTopups = topups.filter(t => t.STATUS === "PENDING");
+    const pendingTopups = topups.filter((t) => t.STATUS === "PENDING");
     const pendingCount = pendingTopups.length;
     if (pendingCount === 0) {
       toast.info("لا توجد عمليات معلقة");
@@ -50,7 +48,7 @@ export default function Topups() {
         await topupsApi.update({
           ...topup,
           STATUS: "REFUSED",
-          MSG_RESPONSE: "تم إلغاء العملية"
+          MSG_RESPONSE: "تم إلغاء العملية",
         });
       }
 
@@ -69,7 +67,7 @@ export default function Topups() {
     setDateFilter("all");
   };
   const uniqueOperators = useMemo(() => {
-    return Array.from(new Set(topups.map(t => t.OPERATOR)));
+    return Array.from(new Set(topups.map((t) => t.OPERATOR)));
   }, [topups]);
   const isWithinDateRange = (timestamp: number, filter: string) => {
     if (filter === "all") return true;
@@ -86,30 +84,38 @@ export default function Topups() {
     }
     return true;
   };
-  const filteredTopups = topups.filter(topup => {
+  const filteredTopups = topups.filter((topup) => {
     // Filter by user role
     if (user?.ROLE === "CUSTOMER" && topup.USER !== user.ID) {
       return false;
     }
-    const matchesSearch = topup.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) || topup.PHONE_NUMBER?.includes(searchTerm) || topup.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) || topup.USER?.includes(searchTerm);
+    const matchesSearch =
+      topup.OPERATOR?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.PHONE_NUMBER?.includes(searchTerm) ||
+      topup.STATUS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      topup.USER?.includes(searchTerm);
     const matchesStatus = statusFilter === "all" || topup.STATUS === statusFilter;
     const matchesOperator = operatorFilter === "all" || topup.OPERATOR === operatorFilter;
     const matchesDate = isWithinDateRange(parseInt(topup.DATE_OPERATION), dateFilter);
     let matchesAmount = true;
     if (amountFilter !== "all") {
       const amount = parseInt(topup.MONTANT || 0);
-      if (amountFilter === "0-10") matchesAmount = amount >= 0 && amount <= 10;else if (amountFilter === "10-30") matchesAmount = amount > 10 && amount <= 30;else if (amountFilter === "30-50") matchesAmount = amount > 30 && amount <= 50;else if (amountFilter === "50+") matchesAmount = amount > 50;
+      if (amountFilter === "0-10") matchesAmount = amount >= 0 && amount <= 10;
+      else if (amountFilter === "10-30") matchesAmount = amount > 10 && amount <= 30;
+      else if (amountFilter === "30-50") matchesAmount = amount > 30 && amount <= 50;
+      else if (amountFilter === "50+") matchesAmount = amount > 50;
     }
     return matchesSearch && matchesStatus && matchesOperator && matchesDate && matchesAmount;
   });
   if (loading) {
-    return <div className="flex items-center justify-center h-[60vh]">
+    return (
+      <div className="flex items-center justify-center h-[60vh]">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>;
+      </div>
+    );
   }
-  return <div className="space-y-6 animate-fade-in" dir="rtl">
-      
-
+  return (
+    <div className="space-y-6 animate-fade-in" dir="rtl">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
@@ -117,10 +123,12 @@ export default function Topups() {
           </h1>
         </div>
         <div className="flex items-center gap-3">
-          {user?.ROLE === "ADMIN" && <Button variant="destructive" onClick={cleanPending} className="gap-2">
+          {user?.ROLE === "ADMIN" && (
+            <Button variant="destructive" onClick={cleanPending} className="gap-2">
               <Trash2 className="h-4 w-4" />
               إلغاء العمليات المعلقة
-            </Button>}
+            </Button>
+          )}
           <Coins className="h-8 w-8 text-success" />
         </div>
       </div>
@@ -131,7 +139,24 @@ export default function Topups() {
             {user?.ROLE === "CUSTOMER" ? "جميع عمليات الشحن الخاصة بك" : "جميع معاملات إعادة شحن الرصيد"}
           </CardDescription>
           <div className="mt-4">
-            <FilterBar searchTerm={searchTerm} onSearchChange={setSearchTerm} statusFilter={statusFilter} onStatusChange={setStatusFilter} operatorFilter={operatorFilter} onOperatorChange={setOperatorFilter} amountFilter={amountFilter} onAmountChange={setAmountFilter} dateFilter={dateFilter} onDateChange={setDateFilter} onReset={resetFilters} searchPlaceholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..." showOperator={true} showAmount={true} showDate={true} operators={uniqueOperators} />
+            <FilterBar
+              searchTerm={searchTerm}
+              onSearchChange={setSearchTerm}
+              statusFilter={statusFilter}
+              onStatusChange={setStatusFilter}
+              operatorFilter={operatorFilter}
+              onOperatorChange={setOperatorFilter}
+              amountFilter={amountFilter}
+              onAmountChange={setAmountFilter}
+              dateFilter={dateFilter}
+              onDateChange={setDateFilter}
+              onReset={resetFilters}
+              searchPlaceholder="ابحث بالمشغل، الهاتف، المستخدم، أو الحالة..."
+              showOperator={true}
+              showAmount={true}
+              showDate={true}
+              operators={uniqueOperators}
+            />
           </div>
         </CardHeader>
         <CardContent>
@@ -144,28 +169,29 @@ export default function Topups() {
                 <TableHead>رقم الهاتف</TableHead>
                 <TableHead>المبلغ (درهم)</TableHead>
                 <TableHead>الرصيد الجديد</TableHead>
-                <TableHead>المستخدم</TableHead>
                 <TableHead>الحالة</TableHead>
                 <TableHead>الرسالة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTopups.map(topup => <TableRow key={topup.ID}>
+              {filteredTopups.map((topup) => (
+                <TableRow key={topup.ID}>
                   <TableCell className="font-medium">#{topup.ID}</TableCell>
                   <TableCell className="text-sm">{formatDate(parseInt(topup.DATE_OPERATION))}</TableCell>
                   <TableCell>{topup.OPERATOR}</TableCell>
                   <TableCell className="font-mono">{topup.PHONE_NUMBER}</TableCell>
                   <TableCell className="font-mono font-medium">{topup.MONTANT}</TableCell>
                   <TableCell className="font-mono">{parseFloat(topup.NEW_BALANCE || 0).toFixed(3)}</TableCell>
-                  <TableCell className="font-mono text-xs">{topup.USER?.substring(0, 12)}...</TableCell>
                   <TableCell>
                     <StatusBadge status={topup.STATUS?.toLowerCase() as any} />
                   </TableCell>
                   <TableCell className="max-w-xs truncate text-sm">{topup.MSG_RESPONSE || "قيد الانتظار..."}</TableCell>
-                </TableRow>)}
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </CardContent>
       </Card>
-    </div>;
+    </div>
+  );
 }
