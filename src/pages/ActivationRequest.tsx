@@ -10,6 +10,7 @@ import { simCardsApi, activationsApi, usersApi } from "@/services/api";
 import marocTelecomLogo from "@/assets/maroc-telecom-logo.png";
 import inwiLogo from "@/assets/inwi-logo.jpg";
 import orangeLogo from "@/assets/orange-logo.png";
+import { useAuth } from "@/contexts/AuthContext";
 const operators = [
   {
     id: "Maroc Telecom",
@@ -33,26 +34,22 @@ export default function ActivationRequest() {
   const [pukCode, setPukCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [simCards, setSimCards] = useState<any[]>([]);
-  const [users, setUsers] = useState<any[]>([]);
-  const [currentUser, setCurrentUser] = useState<any>(null);
+const [currentUser, setCurrentUser] = useState<any>(null);
+const { user: authUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const [simData, userData] = await Promise.all([simCardsApi.getAll(), usersApi.getAll()]);
+        const simData = await simCardsApi.getAll();
         setSimCards(simData as any[]);
-        setUsers(userData as any[]);
-
-        // Get first active user for demo (in production, use authentication)
-        const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-        setCurrentUser(activeUser);
+        setCurrentUser(authUser);
       } catch (error) {
         console.error('Error fetching data:', error);
         toast.error("خطأ في تحميل البيانات");
       }
     };
     fetchData();
-  }, []);
+  }, [authUser]);
   const pollActivationStatus = async (activationId: number): Promise<void> => {
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
@@ -117,7 +114,11 @@ export default function ActivationRequest() {
     }
 
     // Find available SIM card with same operator and activation enabled
-    const availableSim = simCards.find((sim: any) => sim.OPERATOR === selectedOperator && sim.ACTIVATION_STATUS === '1');
+    const normalize = (s: any) => (s ?? "").toString().trim().toLowerCase();
+    const availableSim = simCards.find((sim: any) =>
+      normalize(sim.OPERATOR) === normalize(selectedOperator) &&
+      (sim.ACTIVATION_STATUS === 1 || sim.ACTIVATION_STATUS === "1")
+    );
     if (!availableSim) {
       toast.error(`لا توجد بطاقة SIM متاحة لشركة ${selectedOperator}`);
       return;
@@ -172,9 +173,8 @@ export default function ActivationRequest() {
       await pollActivationStatus(activationId);
 
       // Refresh user data
-      const userData = await usersApi.getAll();
-      const activeUser = (userData as any[]).find((u: any) => u.STATUS === 'ACCEPT');
-      setCurrentUser(activeUser);
+      const refreshed = await usersApi.getById(currentUser.ID);
+      setCurrentUser(refreshed as any);
     } catch (error) {
       console.error('Error submitting activation:', error);
       toast.error("حدث خطأ أثناء إرسال الطلب");
