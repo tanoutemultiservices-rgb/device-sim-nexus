@@ -106,13 +106,6 @@ const { user: authUser } = useAuth();
       return;
     }
 
-    // Check user balance (activation costs 1 dirham)
-    const activationCost = 1;
-    if (currentUser.BALANCE < activationCost) {
-      toast.error(`رصيدك غير كافٍ. رصيدك الحالي: ${currentUser.BALANCE} درهم`);
-      return;
-    }
-
     // Find available SIM card with same operator and activation enabled
     const normalize = (s: any) => (s ?? "").toString().trim().toLowerCase();
     const availableSim = simCards.find((sim: any) =>
@@ -154,13 +147,6 @@ const { user: authUser } = useAuth();
       
       const response = await activationsApi.create(activationData) as any;
       const activationId = response.id;
-
-      // Update user balance
-      const updatedBalance = parseFloat(currentUser.BALANCE) - activationCost;
-      await usersApi.update({
-        ...currentUser,
-        BALANCE: updatedBalance
-      });
 
       toast.info("جاري معالجة طلب التفعيل...");
 
