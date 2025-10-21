@@ -116,3 +116,20 @@ export const topupsApi = {
     method: 'DELETE',
   }),
 };
+
+// Messages API
+export const messagesApi = {
+  getAll: () => apiFetch(API_ENDPOINTS.messages),
+  getById: (id: number) => apiFetch(`${API_ENDPOINTS.messages}?id=${id}`),
+  create: (data: any) => apiFetch(API_ENDPOINTS.messages, {
+    method: 'POST',
+    body: JSON.stringify(data),
+  }),
+  update: (data: any) => apiFetch(API_ENDPOINTS.messages, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+  delete: (id: number) => apiFetch(`${API_ENDPOINTS.messages}?id=${id}`, {
+    method: 'DELETE',
+  }),
+};

@@ -84,6 +84,18 @@ CREATE TABLE IF NOT EXISTS topups (
     FOREIGN KEY (user) REFERENCES USER(ID) ON DELETE CASCADE
 );
 
+-- Messages table for mapping server responses to customer messages
+CREATE TABLE IF NOT EXISTS messages (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    SERVER_MESSAGE TEXT NOT NULL,
+    CUSTOMER_MESSAGE TEXT NOT NULL,
+    TYPE ENUM('Success', 'Error') NOT NULL,
+    OPERATOR VARCHAR(50) NOT NULL,
+    OPERATION ENUM('activation', 'topup') NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
+
 -- Insert sample data (optional)
 INSERT INTO devices (id, name, brand, os, status, last_connect, ip, sim_cards) VALUES
 ('1505ae2fee7d00aa', 'realme Note 50', 'realme', 'Android 13', '1', 1760748498092, '10.125.117.203', 2),

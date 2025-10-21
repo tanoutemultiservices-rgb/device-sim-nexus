@@ -7,6 +7,7 @@ export const API_ENDPOINTS = {
   users: `${API_BASE_URL}/users.php`,
   activations: `${API_BASE_URL}/activations.php`,
   topups: `${API_BASE_URL}/topups.php`,
+  messages: `${API_BASE_URL}/messages.php`,
 };
 
 export default API_BASE_URL;

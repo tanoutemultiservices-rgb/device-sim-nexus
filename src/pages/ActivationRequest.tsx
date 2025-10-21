@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { PlayCircle } from "lucide-react";
 import { toast } from "sonner";
-import { simCardsApi, activationsApi, usersApi } from "@/services/api";
+import { simCardsApi, activationsApi, usersApi, messagesApi } from "@/services/api";
 import marocTelecomLogo from "@/assets/maroc-telecom-logo.png";
 import inwiLogo from "@/assets/inwi-logo.jpg";
 import orangeLogo from "@/assets/orange-logo.png";
@@ -37,13 +37,18 @@ export default function ActivationRequest() {
   const [currentUser, setCurrentUser] = useState<any>(null);
   const [resultMessage, setResultMessage] = useState("");
   const [resultStatus, setResultStatus] = useState<"SUCCESS" | "FAILED" | "">("");
+  const [messages, setMessages] = useState<any[]>([]);
   const { user: authUser } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const simData = await simCardsApi.getAll();
+        const [simData, messagesData] = await Promise.all([
+          simCardsApi.getAll(),
+          messagesApi.getAll(),
+        ]);
         setSimCards(simData as any[]);
+        setMessages(messagesData as any[]);
         setCurrentUser(authUser);
       } catch (error) {
         console.error("Error fetching data:", error);
@@ -62,7 +67,7 @@ export default function ActivationRequest() {
       return () => clearTimeout(timer);
     }
   }, [resultMessage, resultStatus]);
-  const pollActivationStatus = async (activationId: number): Promise<void> => {
+  const pollActivationStatus = async (activationId: number, operator: string): Promise<void> => {
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
         try {
@@ -71,12 +76,27 @@ export default function ActivationRequest() {
           if (activation.MSG_TO_RETURN && activation.MSG_TO_RETURN.trim() !== "") {
             clearInterval(interval);
 
-            if (activation.STATUS === "SUCCESS") {
-              setResultMessage(activation.MSG_TO_RETURN);
-              setResultStatus("SUCCESS");
+            // Find matching message in messages table
+            const matchedMessage = messages.find(
+              (msg: any) =>
+                msg.SERVER_MESSAGE === activation.MSG_TO_RETURN &&
+                msg.OPERATOR === operator &&
+                msg.OPERATION === "activation"
+            );
+
+            if (matchedMessage) {
+              // Use customer message and type from messages table
+              setResultMessage(matchedMessage.CUSTOMER_MESSAGE);
+              setResultStatus(matchedMessage.TYPE === "Success" ? "SUCCESS" : "FAILED");
+
+              // If success, update activation status to ACTIVATE
+              if (matchedMessage.TYPE === "Success") {
+                await activationsApi.update({ id: activationId, STATUS: "ACTIVATE" });
+              }
             } else {
+              // Fallback to server message if no match found
               setResultMessage(activation.MSG_TO_RETURN);
-              setResultStatus("FAILED");
+              setResultStatus(activation.STATUS === "SUCCESS" ? "SUCCESS" : "FAILED");
             }
             resolve();
           }
@@ -173,7 +193,7 @@ export default function ActivationRequest() {
       setPukCode("");
 
       // Poll for activation result
-      await pollActivationStatus(activationId);
+      await pollActivationStatus(activationId, selectedOperator);
 
       // Refresh user data
       const refreshed = await usersApi.getById(currentUser.ID);
