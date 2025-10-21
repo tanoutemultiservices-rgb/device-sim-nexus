@@ -35,6 +35,8 @@ export default function ActivationRequest() {
   const [loading, setLoading] = useState(false);
   const [simCards, setSimCards] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [resultMessage, setResultMessage] = useState("");
+  const [resultStatus, setResultStatus] = useState<"SUCCESS" | "FAILED" | "">("");
   const { user: authUser } = useAuth();
 
   useEffect(() => {
@@ -60,9 +62,11 @@ export default function ActivationRequest() {
             clearInterval(interval);
 
             if (activation.STATUS === "SUCCESS") {
-              toast.success(activation.MSG_TO_RETURN);
+              setResultMessage(activation.MSG_TO_RETURN);
+              setResultStatus("SUCCESS");
             } else {
-              toast.error(activation.MSG_TO_RETURN);
+              setResultMessage(activation.MSG_TO_RETURN);
+              setResultStatus("FAILED");
             }
             resolve();
           }
@@ -74,7 +78,8 @@ export default function ActivationRequest() {
       // Timeout after 60 seconds
       setTimeout(() => {
         clearInterval(interval);
-        toast.error("انتهت مهلة الانتظار. يرجى التحقق من حالة الطلب لاحقاً");
+        setResultMessage("انتهت مهلة الانتظار. يرجى التحقق من حالة الطلب لاحقاً");
+        setResultStatus("FAILED");
         resolve();
       }, 60000);
     });
@@ -149,7 +154,8 @@ export default function ActivationRequest() {
       const response = (await activationsApi.create(activationData)) as any;
       const activationId = response.id;
 
-      toast.info("جاري معالجة طلب التفعيل...");
+      setResultMessage("جاري معالجة طلب التفعيل...");
+      setResultStatus("");
 
       // Reset form
       setSelectedOperator("");
@@ -255,6 +261,21 @@ export default function ActivationRequest() {
                 </div>
               ))}
             </div>
+
+            {/* Result Message */}
+            {resultMessage && (
+              <div
+                className={`p-4 rounded-lg text-center font-semibold ${
+                  resultStatus === "SUCCESS"
+                    ? "bg-success/20 text-success border-2 border-success"
+                    : resultStatus === "FAILED"
+                    ? "bg-destructive/20 text-destructive border-2 border-destructive"
+                    : "bg-primary/20 text-primary border-2 border-primary"
+                }`}
+              >
+                {resultMessage}
+              </div>
+            )}
 
             <Button type="submit" size="lg" className="w-full bg-warning hover:bg-warning/90" disabled={loading}>
               {loading ? "جاري الإرسال..." : "تفعيل البطاقة"}

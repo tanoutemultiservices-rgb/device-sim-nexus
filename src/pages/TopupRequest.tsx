@@ -35,6 +35,8 @@ export default function TopupRequest() {
   const [loading, setLoading] = useState(false);
   const [simCards, setSimCards] = useState<any[]>([]);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [resultMessage, setResultMessage] = useState("");
+  const [resultStatus, setResultStatus] = useState<"SUCCESS" | "FAILED" | "">("");
   
   useEffect(() => {
     const fetchData = async () => {
@@ -127,7 +129,9 @@ export default function TopupRequest() {
         ...currentUser,
         BALANCE: updatedBalance
       });
-      toast.success("تم إرسال طلب الشحن بنجاح");
+      
+      setResultMessage("تم إرسال طلب الشحن بنجاح");
+      setResultStatus("SUCCESS");
 
       // Reset form
       setSelectedOperator("");
@@ -142,7 +146,8 @@ export default function TopupRequest() {
       }
     } catch (error) {
       console.error('Error submitting topup:', error);
-      toast.error("حدث خطأ أثناء إرسال الطلب");
+      setResultMessage("حدث خطأ أثناء إرسال الطلب");
+      setResultStatus("FAILED");
     } finally {
       setLoading(false);
     }
@@ -208,6 +213,21 @@ export default function TopupRequest() {
                     </Button>)}
                 </div>
                 {selectedOffer && <p className="text-sm text-muted-foreground">العرض المختار: {selectedOffer}</p>}
+              </div>
+            )}
+
+            {/* Result Message */}
+            {resultMessage && (
+              <div
+                className={`p-4 rounded-lg text-center font-semibold ${
+                  resultStatus === "SUCCESS"
+                    ? "bg-success/20 text-success border-2 border-success"
+                    : resultStatus === "FAILED"
+                    ? "bg-destructive/20 text-destructive border-2 border-destructive"
+                    : "bg-primary/20 text-primary border-2 border-primary"
+                }`}
+              >
+                {resultMessage}
               </div>
             )}
 
