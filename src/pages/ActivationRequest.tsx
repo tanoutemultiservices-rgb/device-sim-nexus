@@ -52,6 +52,16 @@ export default function ActivationRequest() {
     };
     fetchData();
   }, [authUser]);
+
+  useEffect(() => {
+    if (resultMessage && resultStatus) {
+      const timer = setTimeout(() => {
+        setResultMessage("");
+        setResultStatus("");
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [resultMessage, resultStatus]);
   const pollActivationStatus = async (activationId: number): Promise<void> => {
     return new Promise((resolve) => {
       const interval = setInterval(async () => {

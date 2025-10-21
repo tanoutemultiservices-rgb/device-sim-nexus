@@ -55,6 +55,16 @@ export default function TopupRequest() {
     };
     fetchData();
   }, [authUser]);
+
+  useEffect(() => {
+    if (resultMessage && resultStatus) {
+      const timer = setTimeout(() => {
+        setResultMessage("");
+        setResultStatus("");
+      }, 10000);
+      return () => clearTimeout(timer);
+    }
+  }, [resultMessage, resultStatus]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOperator) {
