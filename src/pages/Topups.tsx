@@ -169,7 +169,6 @@ export default function Topups() {
                 <TableHead>رقم الهاتف</TableHead>
                 <TableHead>المبلغ (درهم)</TableHead>
                 <TableHead>الرصيد الجديد</TableHead>
-                <TableHead>المستخدم</TableHead>
                 <TableHead>الحالة</TableHead>
               </TableRow>
             </TableHeader>
@@ -182,7 +181,6 @@ export default function Topups() {
                   <TableCell className="font-mono">{topup.PHONE_NUMBER}</TableCell>
                   <TableCell className="font-mono font-medium">{topup.MONTANT}</TableCell>
                   <TableCell className="font-mono">{parseFloat(topup.NEW_BALANCE || 0).toFixed(3)}</TableCell>
-                  <TableCell className="font-mono text-xs">{topup.USER?.substring(0, 12)}...</TableCell>
                   <TableCell>
                     <StatusBadge status={topup.STATUS?.toLowerCase() as any} />
                   </TableCell>
