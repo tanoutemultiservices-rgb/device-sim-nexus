@@ -17,6 +17,8 @@ export default function Topups() {
   const [amountFilter, setAmountFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
   useEffect(() => {
     fetchTopups();
   }, []);
@@ -65,6 +67,7 @@ export default function Topups() {
     setOperatorFilter("all");
     setAmountFilter("all");
     setDateFilter("all");
+    setCurrentPage(1);
   };
   const uniqueOperators = useMemo(() => {
     return Array.from(new Set(topups.map((t) => t.OPERATOR)));
@@ -107,6 +110,12 @@ export default function Topups() {
     }
     return matchesSearch && matchesStatus && matchesOperator && matchesDate && matchesAmount;
   });
+
+  const totalPages = Math.ceil(filteredTopups.length / itemsPerPage);
+  const paginatedTopups = filteredTopups.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -173,7 +182,7 @@ export default function Topups() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTopups.map((topup) => (
+              {paginatedTopups.map((topup) => (
                 <TableRow key={topup.ID}>
                   <TableCell className="font-medium">#{topup.ID}</TableCell>
                   <TableCell className="text-sm">{formatDate(parseInt(topup.DATE_OPERATION))}</TableCell>
@@ -188,6 +197,50 @@ export default function Topups() {
               ))}
             </TableBody>
           </Table>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredTopups.length)} من {filteredTopups.length}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  الأول
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </Button>
+                <span className="text-sm">
+                  صفحة {currentPage} من {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  التالي
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  الأخير
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

@@ -16,6 +16,8 @@ export default function Activations() {
   const [operatorFilter, setOperatorFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 50;
   useEffect(() => {
     fetchActivations();
   }, []);
@@ -64,6 +66,7 @@ export default function Activations() {
     setStatusFilter("all");
     setOperatorFilter("all");
     setDateFilter("all");
+    setCurrentPage(1);
   };
   const uniqueOperators = useMemo(() => {
     return Array.from(new Set(activations.map((a) => a.OPERATOR)));
@@ -98,6 +101,12 @@ export default function Activations() {
     const matchesDate = isWithinDateRange(parseInt(activation.DATE_OPERATION), dateFilter);
     return matchesSearch && matchesStatus && matchesOperator && matchesDate;
   });
+
+  const totalPages = Math.ceil(filteredActivations.length / itemsPerPage);
+  const paginatedActivations = filteredActivations.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
@@ -162,7 +171,7 @@ export default function Activations() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredActivations.map((activation: any) => (
+              {paginatedActivations.map((activation: any) => (
                 <TableRow key={activation.ID}>
                   <TableCell className="font-medium">#{activation.ID}</TableCell>
                   <TableCell className="text-sm">{formatDate(parseInt(activation.DATE_OPERATION))}</TableCell>
@@ -179,6 +188,50 @@ export default function Activations() {
               ))}
             </TableBody>
           </Table>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-4 pt-4 border-t">
+              <div className="text-sm text-muted-foreground">
+                عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredActivations.length)} من {filteredActivations.length}
+              </div>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(1)}
+                  disabled={currentPage === 1}
+                >
+                  الأول
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                  disabled={currentPage === 1}
+                >
+                  السابق
+                </Button>
+                <span className="text-sm">
+                  صفحة {currentPage} من {totalPages}
+                </span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  التالي
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(totalPages)}
+                  disabled={currentPage === totalPages}
+                >
+                  الأخير
+                </Button>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>
