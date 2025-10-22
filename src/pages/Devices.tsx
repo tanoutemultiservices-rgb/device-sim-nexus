@@ -55,7 +55,9 @@ export default function Devices() {
     }
   };
 
-  const filteredDevices = devices.filter(device =>
+  const executorDevices = devices.filter(device => device.TYPE === "EXECUTOR");
+  
+  const filteredDevices = executorDevices.filter(device =>
     device.NOM?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     device.BRAND?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     device.OS?.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,8 +80,8 @@ export default function Devices() {
             <CardTitle className="text-sm font-medium">إجمالي الأجهزة</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{devices.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">الأجهزة المسجلة</p>
+            <div className="text-2xl font-bold">{executorDevices.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">أجهزة التنفيذ المسجلة</p>
           </CardContent>
         </Card>
         
@@ -89,7 +91,7 @@ export default function Devices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {devices.filter(d => d.STATUS === "1").length}
+              {executorDevices.filter(d => d.STATUS === "1").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">متصلة حالياً</p>
           </CardContent>
@@ -101,7 +103,7 @@ export default function Devices() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-destructive">
-              {devices.filter(d => d.STATUS === "0").length}
+              {executorDevices.filter(d => d.STATUS === "0").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">غير متصلة حالياً</p>
           </CardContent>
