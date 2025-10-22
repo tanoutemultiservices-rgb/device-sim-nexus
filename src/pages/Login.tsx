@@ -31,6 +31,18 @@ export default function Login() {
     setLoading(true);
     try {
       const users = (await usersApi.getAll()) as any[];
+      console.log('All users from database:', users);
+      console.log('Attempting login with TEL:', tel);
+      
+      // Check each condition separately for debugging
+      const userWithTel = users.find((u: any) => u.TEL === tel);
+      console.log('User found with this phone:', userWithTel);
+      
+      if (userWithTel) {
+        console.log('User STATUS:', userWithTel.STATUS);
+        console.log('Password match:', userWithTel.PASSWORD === password);
+      }
+      
       const foundUser = users.find((u: any) => u.TEL === tel && u.PASSWORD === password && u.STATUS === 'ACCEPT');
       if (!foundUser) {
         toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
