@@ -118,8 +118,11 @@ export default function SimCards() {
     }
   };
 
-  // Group SIM cards by device
-  const deviceGroups = devices.map(device => {
+  // Filter devices to only show EXECUTOR type
+  const executorDevices = devices.filter(device => device.TYPE === "EXECUTOR");
+  
+  // Group SIM cards by executor devices only
+  const deviceGroups = executorDevices.map(device => {
     const deviceSimCards = simCards.filter(sim => {
       const cleanSimDeviceId = sim.DEVICE?.replace(/^X/, '');
       return cleanSimDeviceId === device.ID || sim.DEVICE === device.ID;
@@ -128,6 +131,14 @@ export default function SimCards() {
       device,
       simCards: deviceSimCards
     };
+  });
+  
+  // Get all SIM cards from executor devices for statistics
+  const executorSimCards = simCards.filter(sim => {
+    const cleanSimDeviceId = sim.DEVICE?.replace(/^X/, '');
+    return executorDevices.some(device => 
+      device.ID === cleanSimDeviceId || device.ID === sim.DEVICE
+    );
   });
 
   // Filter by search term
@@ -157,8 +168,8 @@ export default function SimCards() {
             <CardTitle className="text-sm font-medium">إجمالي البطاقات</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{simCards.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">جميع بطاقات SIM</p>
+            <div className="text-2xl font-bold">{executorSimCards.length}</div>
+            <p className="text-xs text-muted-foreground mt-1">بطاقات SIM للتنفيذ</p>
           </CardContent>
         </Card>
         
@@ -168,7 +179,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
-              {simCards.filter(s => s.CONNECTED === "1").length}
+              {executorSimCards.filter(s => s.CONNECTED === "1").length}
             </div>
             <p className="text-xs text-muted-foreground mt-1">نشطة حالياً</p>
           </CardContent>
@@ -180,7 +191,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-primary">
-              {simCards.reduce((sum, s) => sum + parseInt(s.TODAY_NB_ACTIVATION || 0), 0)}
+              {executorSimCards.reduce((sum, s) => sum + parseInt(s.TODAY_NB_ACTIVATION || 0), 0)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">إجمالي العمليات</p>
           </CardContent>
@@ -192,7 +203,7 @@ export default function SimCards() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
-              {simCards.reduce((sum, s) => sum + parseFloat(s.BALANCE || 0), 0).toFixed(2)}
+              {executorSimCards.reduce((sum, s) => sum + parseFloat(s.BALANCE || 0), 0).toFixed(2)}
             </div>
             <p className="text-xs text-muted-foreground mt-1">درهم</p>
           </CardContent>
