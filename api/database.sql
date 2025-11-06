@@ -96,6 +96,14 @@ CREATE TABLE IF NOT EXISTS messages (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Config table for service management
+CREATE TABLE IF NOT EXISTS CONFIG (
+    ID INT AUTO_INCREMENT PRIMARY KEY,
+    SERVICE VARCHAR(30) NOT NULL,
+    STATUS TINYINT(1) NOT NULL DEFAULT 1,
+    AUTRE VARCHAR(20) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- Insert sample data (optional)
 INSERT INTO devices (id, name, brand, os, status, last_connect, ip, sim_cards) VALUES
 ('1505ae2fee7d00aa', 'realme Note 50', 'realme', 'Android 13', '1', 1760748498092, '10.125.117.203', 2),
@@ -108,3 +116,10 @@ INSERT INTO USER (ID, USERNAME, NOM, PRENOM, TEL, EMAIL, PASSWORD, STATUS, BALAN
 INSERT INTO sim_cards (id, operator, number, today_activations, today_topups, connected, balance, activation_status, topup_status, device, last_connect) VALUES
 (73, 'Maroc Telecom', '0612345678', 12, 5, '0', 45.325, '1', '1', '1505ae2fee7d00aa', 1752250399916),
 (76, 'inwi', '0716522709', 18, 8, '1', 1745.525, '1', '1', '2f37396e5b991337', 1756979741970);
+
+INSERT INTO CONFIG (SERVICE, STATUS, AUTRE) VALUES
+('Activation Service', 1, 'Main Service'),
+('Top-up Service', 1, 'Main Service'),
+('SMS Notifications', 1, 'Alert Service'),
+('Auto Recharge', 0, 'Premium Feature'),
+('Balance Check', 1, 'Core Service');
