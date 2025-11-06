@@ -21,68 +21,68 @@ import { useState } from "react";
 const menuItems = [
   // Admin menu items
   {
-    title: "لوحة التحكم",
+    title: "Dashboard",
     url: "/",
     icon: LayoutDashboard,
     roles: ["ADMIN"],
   },
   {
-    title: "الأجهزة",
+    title: "Devices",
     url: "/devices",
     icon: Smartphone,
     roles: ["ADMIN"],
   },
   {
-    title: "بطاقات SIM",
+    title: "SIM Cards",
     url: "/sim-cards",
     icon: CreditCard,
     roles: ["ADMIN"],
   },
   {
-    title: "المستخدمون",
+    title: "Users",
     url: "/users",
     icon: Users,
     roles: ["ADMIN"],
   },
   {
-    title: "جميع التفعيلات",
+    title: "All Activations",
     url: "/activations",
     icon: PlayCircle,
     roles: ["ADMIN"],
   },
   {
-    title: "جميع الشحنات",
+    title: "All Top-ups",
     url: "/topups",
     icon: Coins,
     roles: ["ADMIN"],
   },
   // Customer menu items
   {
-    title: " تفعيل بطاقة",
+    title: "New Activation",
     url: "/activation-request",
     icon: Plus,
     roles: ["CUSTOMER"],
   },
   {
-    title: "تعبئة",
+    title: "New Top-up",
     url: "/topup-request",
     icon: Plus,
     roles: ["CUSTOMER"],
   },
   {
-    title: "ACTIVATIONS",
+    title: "My Activations",
     url: "/activations",
     icon: History,
     roles: ["CUSTOMER"],
   },
   {
-    title: "RECHARGES",
+    title: "My Top-ups",
     url: "/topups",
     icon: History,
     roles: ["CUSTOMER"],
   },
   {
-    title: "الملف الشخصي",
+    title: "Profile",
     url: "/profile",
     icon: UserCircle,
     roles: ["ADMIN", "CUSTOMER"],
@@ -107,15 +107,15 @@ export function TopNav() {
   const normalizedRole = user.ROLE === "CUSTMER" ? "CUSTOMER" : user.ROLE;
   const filteredMenuItems = menuItems.filter((item) => item.roles.includes(normalizedRole));
   return (
-    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm" dir="rtl">
+    <nav className="sticky top-0 z-50 w-full border-b bg-card shadow-sm">
       <div className="flex h-16 items-center px-4 md:px-6 gap-2 md:gap-4">
-        <div className="flex items-center space-x-3 space-x-reverse">
+        <div className="flex items-center space-x-3">
           <CreditCard className="h-6 w-6 text-primary" />
           <span className="font-bold text-lg md:text-xl tracking-tight">chargi.store</span>
         </div>
 
         {/* Desktop Menu */}
-        <div className="hidden md:flex items-center space-x-2 space-x-reverse flex-1 mx-4">
+        <div className="hidden md:flex items-center space-x-2 flex-1 mx-4">
           {filteredMenuItems.map((item) => (
             <NavLink
               key={item.title}
@@ -144,7 +144,7 @@ export function TopNav() {
                 <Menu className="h-5 w-5" />
               </Button>
             </SheetTrigger>
-            <SheetContent side="right" className="w-64" dir="rtl">
+            <SheetContent side="left" className="w-64">
               <div className="flex flex-col gap-2 mt-8">
                 {filteredMenuItems.map((item) => (
                   <NavLink
@@ -173,8 +173,8 @@ export function TopNav() {
         <div className="flex items-center gap-2 px-3 md:px-6 py-2 bg-secondary/50 rounded-lg border border-border">
           <Coins className="h-4 md:h-5 w-4 md:w-5 text-primary" />
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">الرصيد</span>
-            <span className="text-xs md:text-sm font-bold text-foreground">{Number(user.BALANCE || 0).toFixed(2)} درهم</span>
+            <span className="text-xs text-muted-foreground">Balance</span>
+            <span className="text-xs md:text-sm font-bold text-foreground">{Number(user.BALANCE || 0).toFixed(2)} DH</span>
           </div>
         </div>
         <div className="flex items-center">

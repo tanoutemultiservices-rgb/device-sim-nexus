@@ -25,7 +25,7 @@ export default function Login() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!tel || !password) {
-      toast.error('الرجاء إدخال رقم الهاتف وكلمة المرور');
+      toast.error("Please enter phone number and password");
       return;
     }
     setLoading(true);
@@ -45,12 +45,12 @@ export default function Login() {
       
       const foundUser = users.find((u: any) => u.TEL === tel && u.PASSWORD === password && u.STATUS === 'ACCEPT');
       if (!foundUser) {
-        toast.error('رقم الهاتف أو كلمة المرور غير صحيحة');
+        toast.error("Phone number or password is incorrect");
         setLoading(false);
         return;
       }
       await login(foundUser.ID);
-      toast.success(`مرحباً ${foundUser.USERNAME}`);
+      toast.success(`Welcome ${foundUser.USERNAME}`);
 
       // Redirect based on role
       if (foundUser.ROLE === 'ADMIN') {
@@ -62,7 +62,7 @@ export default function Login() {
       }
     } catch (error) {
       console.error('Login error:', error);
-      toast.error('حدث خطأ أثناء تسجيل الدخول');
+      toast.error("An error occurred during login");
     } finally {
       setLoading(false);
     }
@@ -75,15 +75,15 @@ export default function Login() {
               <LogIn className="h-8 w-8 text-primary" />
             </div>
           </div>
-          <CardTitle className="text-2xl font-bold">تسجيل الدخول</CardTitle>
-          <CardDescription>أدخل رقم هاتفك وكلمة المرور للدخول إلى حسابك</CardDescription>
+          <CardTitle className="text-2xl font-bold">Login</CardTitle>
+          <CardDescription>Enter your phone number and password to access your account</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4" dir="rtl">
+          <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="tel" className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
-                رقم الهاتف
+                Phone Number
               </Label>
               <Input id="tel" type="tel" placeholder="0612345678" value={tel} onChange={e => setTel(e.target.value)} maxLength={10} required />
             </div>
@@ -91,7 +91,7 @@ export default function Login() {
             <div className="space-y-2">
               <Label htmlFor="password" className="flex items-center gap-2">
                 <Lock className="h-4 w-4" />
-                كلمة المرور
+                Password
               </Label>
               <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required />
             </div>
@@ -99,8 +99,8 @@ export default function Login() {
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <>
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  جاري تسجيل الدخول...
-                </> : 'تسجيل الدخول'}
+                  Logging in...
+                </> : "Login"}
             </Button>
           </form>
 
