@@ -133,3 +133,12 @@ export const messagesApi = {
     method: 'DELETE',
   }),
 };
+
+// Config API
+export const configApi = {
+  getAll: () => apiFetch(API_ENDPOINTS.config),
+  update: (data: any) => apiFetch(API_ENDPOINTS.config, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  }),
+};
