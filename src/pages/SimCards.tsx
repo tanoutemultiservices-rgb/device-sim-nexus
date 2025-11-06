@@ -28,7 +28,7 @@ export default function SimCards() {
       setSimCards(simData as any[]);
       setDevices(deviceData as any[]);
     } catch (error: any) {
-      toast.error(`فشل تحميل البيانات: ${error.message}`);
+      toast.error(`Failed to load data: ${error.message}`);
       console.error('Error fetching data:', error);
     } finally {
       setLoading(false);
@@ -36,8 +36,8 @@ export default function SimCards() {
   };
 
   const formatDate = (timestamp: number) => {
-    if (!timestamp || timestamp === 0) return "غير متوفر";
-    return new Date(parseInt(timestamp.toString())).toLocaleString('ar-MA');
+    if (!timestamp || timestamp === 0) return "Not available";
+    return new Date(parseInt(timestamp.toString())).toLocaleString('en-US');
   };
 
   const getDevice = (deviceId: string) => {
@@ -76,11 +76,11 @@ export default function SimCards() {
       
       toast.success(
         newStatus === "1" 
-          ? `تم تفعيل الجهاز ${device.NOM}` 
-          : `تم تعطيل الجهاز ${device.NOM} وجميع بطاقات SIM الخاصة به`
+          ? `Device ${device.NOM} activated` 
+          : `Device ${device.NOM} and all its SIM cards deactivated`
       );
     } catch (error: any) {
-      toast.error(`فشل تحديث الجهاز: ${error.message}`);
+      toast.error(`Failed to update device: ${error.message}`);
     }
   };
 
@@ -92,7 +92,7 @@ export default function SimCards() {
     // Check if device is active
     const device = getDevice(sim.DEVICE);
     if (!device || device.STATUS === "0") {
-      toast.error("لا يمكن تفعيل بطاقة SIM عندما يكون الجهاز غير نشط");
+      toast.error("Cannot activate SIM card when device is inactive");
       return;
     }
 
@@ -110,11 +110,11 @@ export default function SimCards() {
 
       toast.success(
         newStatus === "1" 
-          ? `تم تفعيل ${type === "activation" ? "التفعيل" : "الشحن"} لبطاقة SIM ${sim.NUMBER}` 
-          : `تم تعطيل ${type === "activation" ? "التفعيل" : "الشحن"} لبطاقة SIM ${sim.NUMBER}`
+          ? `${type === "activation" ? "Activation" : "Top-up"} enabled for SIM card ${sim.NUMBER}` 
+          : `${type === "activation" ? "Activation" : "Top-up"} disabled for SIM card ${sim.NUMBER}`
       );
     } catch (error: any) {
-      toast.error(`فشل تحديث بطاقة SIM: ${error.message}`);
+      toast.error(`Failed to update SIM card: ${error.message}`);
     }
   };
 

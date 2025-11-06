@@ -27,21 +27,21 @@ export default function Activations() {
       const data = await activationsApi.getAll();
       setActivations(data as any[]);
     } catch (error: any) {
-      toast.error(`فشل تحميل التفعيلات: ${error.message}`);
+      toast.error(`Failed to load activations: ${error.message}`);
       console.error("Error fetching activations:", error);
     } finally {
       setLoading(false);
     }
   };
   const formatDate = (timestamp: number) => {
-    if (timestamp === 0) return "غير متوفر";
-    return new Date(timestamp).toLocaleString("ar-MA");
+    if (timestamp === 0) return "Not available";
+    return new Date(timestamp).toLocaleString("en-US");
   };
   const cleanPending = async () => {
     const pendingActivations = activations.filter((a) => a.STATUS === "PENDING");
     const pendingCount = pendingActivations.length;
     if (pendingCount === 0) {
-      toast.info("لا توجد عمليات معلقة");
+      toast.info("No pending operations");
       return;
     }
     try {
@@ -50,15 +50,15 @@ export default function Activations() {
         await activationsApi.update({
           ...activation,
           STATUS: "REFUSED",
-          MSG_RESPONSE: "تم إلغاء العملية",
+          MSG_RESPONSE: "Operation cancelled",
         });
       }
 
       // Refresh data
       await fetchActivations();
-      toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+      toast.success(`Cancelled ${pendingCount} pending operations`);
     } catch (error: any) {
-      toast.error(`فشل إلغاء العمليات: ${error.message}`);
+      toast.error(`Failed to cancel operations: ${error.message}`);
     }
   };
   const resetFilters = () => {

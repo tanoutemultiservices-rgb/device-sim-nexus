@@ -28,20 +28,20 @@ export default function Topups() {
       const data = await topupsApi.getAll();
       setTopups(data as any[]);
     } catch (error: any) {
-      toast.error(`فشل تحميل الشحنات: ${error.message}`);
+      toast.error(`Failed to load top-ups: ${error.message}`);
       console.error("Error fetching topups:", error);
     } finally {
       setLoading(false);
     }
   };
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString("ar-MA");
+    return new Date(timestamp).toLocaleString("en-US");
   };
   const cleanPending = async () => {
     const pendingTopups = topups.filter((t) => t.STATUS === "PENDING");
     const pendingCount = pendingTopups.length;
     if (pendingCount === 0) {
-      toast.info("لا توجد عمليات معلقة");
+      toast.info("No pending operations");
       return;
     }
     try {
@@ -50,15 +50,15 @@ export default function Topups() {
         await topupsApi.update({
           ...topup,
           STATUS: "REFUSED",
-          MSG_RESPONSE: "تم إلغاء العملية",
+          MSG_RESPONSE: "Operation cancelled",
         });
       }
 
       // Refresh data
       await fetchTopups();
-      toast.success(`تم إلغاء ${pendingCount} عملية معلقة`);
+      toast.success(`Cancelled ${pendingCount} pending operations`);
     } catch (error: any) {
-      toast.error(`فشل إلغاء العمليات: ${error.message}`);
+      toast.error(`Failed to cancel operations: ${error.message}`);
     }
   };
   const resetFilters = () => {

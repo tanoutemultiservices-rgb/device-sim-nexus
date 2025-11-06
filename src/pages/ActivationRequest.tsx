@@ -52,7 +52,7 @@ export default function ActivationRequest() {
         setCurrentUser(authUser);
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast.error("خطأ في تحميل البيانات");
+        toast.error("Error loading data");
       }
     };
     fetchData();
@@ -108,7 +108,7 @@ export default function ActivationRequest() {
       // Timeout after 60 seconds
       setTimeout(() => {
         clearInterval(interval);
-        setResultMessage("انتهت مهلة الانتظار. يرجى التحقق من حالة الطلب لاحقاً");
+        setResultMessage("Request timed out. Please check the request status later");
         setResultStatus("FAILED");
         resolve();
       }, 60000);
@@ -118,26 +118,26 @@ export default function ActivationRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOperator) {
-      toast.error("الرجاء اختيار المشغل");
+      toast.error("Please select an operator");
       return;
     }
     if (!phoneNumber || phoneNumber.length < 10) {
-      toast.error("الرجاء إدخال رقم هاتف صحيح");
+      toast.error("Please enter a valid phone number");
       return;
     }
     if (!pukCode || pukCode.length !== 4) {
-      toast.error("الرجاء إدخال رمز PUK المكون من 4 أرقام");
+      toast.error("Please enter a 4-digit PUK code");
       return;
     }
 
     if (!currentUser) {
-      toast.error("لم يتم العثور على المستخدم");
+      toast.error("User not found");
       return;
     }
 
     // Check if user has activation permission
     if (currentUser.ACTIVATION !== 1 && currentUser.ACTIVATION !== "1") {
-      toast.error("ليس لديك صلاحية لطلب التفعيل");
+      toast.error("You do not have permission to request activation");
       return;
     }
 
@@ -149,7 +149,7 @@ export default function ActivationRequest() {
         (sim.ACTIVATION_STATUS === 1 || sim.ACTIVATION_STATUS === "1"),
     );
     if (!availableSim) {
-      toast.error(`لا توجد بطاقة SIM متاحة لشركة ${selectedOperator}`);
+      toast.error(`No SIM card available for ${selectedOperator}`);
       return;
     }
 
@@ -184,7 +184,7 @@ export default function ActivationRequest() {
       const response = (await activationsApi.create(activationData)) as any;
       const activationId = response.id;
 
-      setResultMessage("جاري معالجة طلب التفعيل...");
+      setResultMessage("Processing activation request...");
       setResultStatus("");
 
       // Reset form
@@ -200,7 +200,7 @@ export default function ActivationRequest() {
       setCurrentUser(refreshed as any);
     } catch (error) {
       console.error("Error submitting activation:", error);
-      toast.error("حدث خطأ أثناء إرسال الطلب");
+      toast.error("An error occurred while submitting the request");
     } finally {
       setLoading(false);
     }
@@ -214,10 +214,10 @@ export default function ActivationRequest() {
     setPhoneNumber(value);
   };
   return (
-    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto" dir="rtl">
+    <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">تفعيل البطاقات</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Card Activation</h1>
         </div>
         <PlayCircle className="h-8 w-8 text-warning" />
       </div>
@@ -227,7 +227,7 @@ export default function ActivationRequest() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Operator Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold">اختر المشغل</Label>
+              <Label className="text-base font-semibold">Select Operator</Label>
               <RadioGroup value={selectedOperator} onValueChange={setSelectedOperator}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {operators.map((operator) => (
@@ -248,7 +248,7 @@ export default function ActivationRequest() {
             {/* Phone Number */}
             <div className="space-y-2">
               <Label htmlFor="phone" className="text-base font-semibold">
-                رقم الهاتف
+                Phone Number
               </Label>
               <Input
                 id="phone"
@@ -265,7 +265,7 @@ export default function ActivationRequest() {
             {/* PUK Code */}
             <div className="space-y-2">
               <Label htmlFor="puk" className="text-base font-semibold">
-                اربع الارقام الاخيرة من رمز PUK
+                Last 4 digits of PUK code
               </Label>
               <Input
                 id="puk"
@@ -308,7 +308,7 @@ export default function ActivationRequest() {
             )}
 
             <Button type="submit" size="lg" className="w-full bg-warning hover:bg-warning/90" disabled={loading}>
-              {loading ? "جاري الإرسال..." : "تفعيل البطاقة"}
+              {loading ? "Sending..." : "Activate Card"}
             </Button>
           </form>
         </CardContent>

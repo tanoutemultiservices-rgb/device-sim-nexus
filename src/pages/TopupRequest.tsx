@@ -50,7 +50,7 @@ export default function TopupRequest() {
         }
       } catch (error) {
         console.error('Error fetching data:', error);
-        toast.error("خطأ في تحميل البيانات");
+        toast.error("Error loading data");
       }
     };
     fetchData();
@@ -68,39 +68,39 @@ export default function TopupRequest() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedOperator) {
-      toast.error("الرجاء اختيار المشغل");
+      toast.error("Please select an operator");
       return;
     }
     if (!phoneNumber || phoneNumber.length < 10) {
-      toast.error("الرجاء إدخال رقم هاتف صحيح");
+      toast.error("Please enter a valid phone number");
       return;
     }
     if (!selectedAmount) {
-      toast.error("الرجاء اختيار المبلغ");
+      toast.error("Please select an amount");
       return;
     }
     if (!currentUser) {
-      toast.error("لم يتم العثور على المستخدم");
+      toast.error("User not found");
       return;
     }
 
     // Check if user has topup permission
     if (currentUser.TOPUP !== 1 && currentUser.TOPUP !== '1') {
-      toast.error("ليس لديك صلاحية لطلب الشحن");
+      toast.error("You do not have permission to request top-up");
       return;
     }
 
     // Check user balance
     const amount = parseFloat(selectedAmount);
     if (currentUser.BALANCE < amount) {
-      toast.error(`رصيدك غير كافٍ. رصيدك الحالي: ${currentUser.BALANCE} درهم`);
+      toast.error(`Insufficient balance. Your current balance: ${currentUser.BALANCE} DH`);
       return;
     }
 
     // Find available SIM card with same operator and topup enabled
     const availableSim = simCards.find((sim: any) => sim.OPERATOR === selectedOperator && sim.TOPUP_STATUS === '1');
     if (!availableSim) {
-      toast.error(`لا توجد بطاقة SIM متاحة لشركة ${selectedOperator}`);
+      toast.error(`No SIM card available for ${selectedOperator}`);
       return;
     }
     setLoading(true);
@@ -140,7 +140,7 @@ export default function TopupRequest() {
         BALANCE: updatedBalance
       });
       
-      setResultMessage("تم إرسال طلب الشحن بنجاح");
+      setResultMessage("Top-up request submitted successfully");
       setResultStatus("SUCCESS");
 
       // Reset form
@@ -156,16 +156,16 @@ export default function TopupRequest() {
       }
     } catch (error) {
       console.error('Error submitting topup:', error);
-      setResultMessage("حدث خطأ أثناء إرسال الطلب");
+      setResultMessage("An error occurred while submitting the request");
       setResultStatus("FAILED");
     } finally {
       setLoading(false);
     }
   };
-  return <div className="space-y-6 animate-fade-in max-w-4xl mx-auto" dir="rtl">
+  return <div className="space-y-6 animate-fade-in max-w-4xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">التعبئة السريـــعة</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">Quick Top-up</h1>
         </div>
         <Coins className="h-8 w-8 text-primary" />
       </div>
@@ -176,7 +176,7 @@ export default function TopupRequest() {
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Operator Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold">اختر المشغل</Label>
+              <Label className="text-base font-semibold">Select Operator</Label>
               <RadioGroup value={selectedOperator} onValueChange={setSelectedOperator}>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   {operators.map(operator => <div key={operator.id}>
@@ -191,13 +191,13 @@ export default function TopupRequest() {
 
             {/* Phone Number */}
             <div className="space-y-2">
-              <Label htmlFor="phone" className="text-base font-semibold">رقم الهاتف</Label>
+              <Label htmlFor="phone" className="text-base font-semibold">Phone Number</Label>
               <Input id="phone" type="tel" placeholder="0612345678" value={phoneNumber} onChange={e => setPhoneNumber(e.target.value)} className="text-lg" maxLength={10} />
             </div>
 
             {/* Amount Selection */}
             <div className="space-y-3">
-              <Label className="text-base font-semibold">اختر المبلغ (درهم)</Label>
+              <Label className="text-base font-semibold">Select Amount (DH)</Label>
               <RadioGroup value={selectedAmount} onValueChange={(value) => {
                 setSelectedAmount(value);
                 setSelectedOffer(""); // Clear offer when amount changes
@@ -216,13 +216,13 @@ export default function TopupRequest() {
             {/* Offer Selection (Optional) - Only show when amount is selected */}
             {selectedAmount && (
               <div className="space-y-3">
-                <Label className="text-base font-semibold">اختر عرض (اختياري)</Label>
+                <Label className="text-base font-semibold">Select Offer (Optional)</Label>
                 <div className="flex flex-wrap gap-3">
                   {offers.map(offer => <Button key={offer} type="button" variant={selectedOffer === offer ? "default" : "outline"} onClick={() => setSelectedOffer(selectedOffer === offer ? "" : offer)} className="text-lg font-mono px-6 py-6">
                       {offer}
                     </Button>)}
                 </div>
-                {selectedOffer && <p className="text-sm text-muted-foreground">العرض المختار: {selectedOffer}</p>}
+                {selectedOffer && <p className="text-sm text-muted-foreground">Selected offer: {selectedOffer}</p>}
               </div>
             )}
 
@@ -242,7 +242,7 @@ export default function TopupRequest() {
             )}
 
             <Button type="submit" size="lg" className="w-full bg-success hover:bg-success/90" disabled={loading}>
-              {loading ? "جاري الإرسال..." : "شحن الرصيد"}
+              {loading ? "Sending..." : "Top-up Balance"}
             </Button>
           </form>
         </CardContent>

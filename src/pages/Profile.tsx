@@ -55,7 +55,7 @@ export default function Profile() {
     e.preventDefault();
     
     if (!currentUser) {
-      toast.error("لم يتم العثور على بيانات المستخدم");
+      toast.error("User data not found");
       return;
     }
 
@@ -76,14 +76,14 @@ export default function Profile() {
         ROLE: currentUser.ROLE,
       });
       
-      toast.success("تم تحديث الملف الشخصي بنجاح");
+      toast.success("Profile updated successfully");
       
       // Refresh user data
       await login(currentUser.ID);
       
     } catch (error) {
       console.error('Error updating profile:', error);
-      toast.error("حدث خطأ أثناء تحديث الملف الشخصي");
+      toast.error("An error occurred while updating profile");
     } finally {
       setSaving(false);
     }
@@ -93,25 +93,25 @@ export default function Profile() {
     e.preventDefault();
     
     if (!currentUser) {
-      toast.error("لم يتم العثور على بيانات المستخدم");
+      toast.error("User data not found");
       return;
     }
 
     // Validate current password
     if (passwordData.currentPassword !== currentUser.PASSWORD) {
-      toast.error("كلمة المرور الحالية غير صحيحة");
+      toast.error("Current password is incorrect");
       return;
     }
 
     // Validate new password
     if (passwordData.newPassword.length < 6) {
-      toast.error("كلمة المرور الجديدة يجب أن تكون 6 أحرف على الأقل");
+      toast.error("New password must be at least 6 characters");
       return;
     }
 
     // Validate password match
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast.error("كلمة المرور الجديدة غير متطابقة");
+      toast.error("New passwords do not match");
       return;
     }
 
@@ -132,7 +132,7 @@ export default function Profile() {
         ROLE: currentUser.ROLE,
       });
       
-      toast.success("تم تحديث كلمة المرور بنجاح");
+      toast.success("Password updated successfully");
       
       // Clear password fields
       setPasswordData({
@@ -146,7 +146,7 @@ export default function Profile() {
       
     } catch (error) {
       console.error('Error updating password:', error);
-      toast.error("حدث خطأ أثناء تحديث كلمة المرور");
+      toast.error("An error occurred while updating password");
     } finally {
       setSavingPassword(false);
     }
@@ -156,7 +156,7 @@ export default function Profile() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <p className="text-muted-foreground">لم يتم العثور على بيانات المستخدم</p>
+          <p className="text-muted-foreground">User data not found</p>
         </div>
       </div>
     );

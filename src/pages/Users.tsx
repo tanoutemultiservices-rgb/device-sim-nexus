@@ -28,7 +28,7 @@ export default function Users() {
       const data = await usersApi.getAll();
       setUsers(data as any[]);
     } catch (error: any) {
-      toast.error(`فشل تحميل المستخدمين: ${error.message}`);
+      toast.error(`Failed to load users: ${error.message}`);
       console.error('Error fetching users:', error);
     } finally {
       setLoading(false);
@@ -48,11 +48,11 @@ export default function Users() {
       ));
       toast.success(
         newStatus === "ACCEPT" 
-          ? `تم تفعيل المستخدم ${user.USERNAME}` 
-          : `تم تعطيل المستخدم ${user.USERNAME}`
+          ? `User ${user.USERNAME} activated` 
+          : `User ${user.USERNAME} deactivated`
       );
     } catch (error: any) {
-      toast.error(`فشل تحديث المستخدم: ${error.message}`);
+      toast.error(`Failed to update user: ${error.message}`);
     }
   };
 
@@ -99,55 +99,55 @@ export default function Users() {
   }
 
   return (
-    <div className="space-y-6 animate-fade-in" dir="rtl">
+    <div className="space-y-6 animate-fade-in">
       <div className="grid gap-4 md:grid-cols-3">
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">إجمالي المستخدمين</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Users</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground mt-1">الحسابات المسجلة</p>
+            <p className="text-xs text-muted-foreground mt-1">Registered accounts</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">المستخدمون النشطون</CardTitle>
+            <CardTitle className="text-sm font-medium">Active Users</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-success">
               {users.filter(u => u.STATUS === "ACCEPT").length}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">الحسابات المعتمدة</p>
+            <p className="text-xs text-muted-foreground mt-1">Approved accounts</p>
           </CardContent>
         </Card>
         
         <Card>
           <CardHeader className="pb-3">
-            <CardTitle className="text-sm font-medium">الرصيد الإجمالي</CardTitle>
+            <CardTitle className="text-sm font-medium">Total Balance</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-accent">
               {users.reduce((sum, u) => sum + parseFloat(u.BALANCE || 0), 0).toFixed(3)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">درهم</p>
+            <p className="text-xs text-muted-foreground mt-1">DH</p>
           </CardContent>
         </Card>
       </div>
 
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">إدارة المستخدمين</h1>
-          <p className="text-muted-foreground mt-2">عرض وإدارة حسابات العملاء</p>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">User Management</h1>
+          <p className="text-muted-foreground mt-2">View and manage customer accounts</p>
         </div>
         <UsersIcon className="h-8 w-8 text-accent" />
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle>المستخدمون المسجلون</CardTitle>
-          <CardDescription>جميع حسابات العملاء في النظام</CardDescription>
+          <CardTitle>Registered Users</CardTitle>
+          <CardDescription>All customer accounts in the system</CardDescription>
           <div className="mt-4">
             <FilterBar
               searchTerm={searchTerm}
@@ -157,7 +157,7 @@ export default function Users() {
               amountFilter={amountFilter}
               onAmountChange={setAmountFilter}
               onReset={resetFilters}
-              searchPlaceholder="ابحث باسم المستخدم، الاسم، البريد الإلكتروني، أو الهاتف..."
+              searchPlaceholder="Search by username, name, email, or phone..."
               showAmount={true}
             />
           </div>
@@ -166,14 +166,14 @@ export default function Users() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>اسم المستخدم</TableHead>
-                <TableHead>الاسم الكامل</TableHead>
-                <TableHead>البريد الإلكتروني</TableHead>
-                <TableHead>الهاتف</TableHead>
-                <TableHead>الرصيد (درهم)</TableHead>
-                <TableHead>الدور</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead>الإجراءات</TableHead>
+                <TableHead>Username</TableHead>
+                <TableHead>Full Name</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead>Phone</TableHead>
+                <TableHead>Balance (DH)</TableHead>
+                <TableHead>Role</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -219,7 +219,7 @@ export default function Users() {
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-4 pt-4 border-t">
               <div className="text-sm text-muted-foreground">
-                عرض {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredUsers.length)} من {filteredUsers.length}
+                Showing {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, filteredUsers.length)} of {filteredUsers.length}
               </div>
               <div className="flex items-center gap-2">
                 <Button

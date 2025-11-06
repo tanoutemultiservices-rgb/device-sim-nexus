@@ -37,7 +37,7 @@ export default function Dashboard() {
         setActivations(activationsData as any[]);
         setTopups(topupsData as any[]);
       } catch (error: any) {
-        toast.error(`فشل تحميل البيانات: ${error.message}`);
+        toast.error(`Failed to load data: ${error.message}`);
         console.error('Error fetching data:', error);
       } finally {
         setLoading(false);

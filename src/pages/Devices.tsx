@@ -23,7 +23,7 @@ export default function Devices() {
       const data = await devicesApi.getAll();
       setDevices(data as any[]);
     } catch (error: any) {
-      toast.error(`فشل تحميل الأجهزة: ${error.message}`);
+      toast.error(`Failed to load devices: ${error.message}`);
       console.error('Error fetching devices:', error);
     } finally {
       setLoading(false);
@@ -31,7 +31,7 @@ export default function Devices() {
   };
 
   const formatDate = (timestamp: number) => {
-    return new Date(timestamp).toLocaleString('ar-MA');
+    return new Date(timestamp).toLocaleString('en-US');
   };
 
   const toggleDeviceStatus = async (deviceId: string) => {
@@ -47,11 +47,11 @@ export default function Devices() {
       ));
       toast.success(
         newStatus === "1" 
-          ? `تم تفعيل الجهاز ${device.NOM}. تم تفعيل جميع بطاقات SIM.` 
-          : `تم تعطيل الجهاز ${device.NOM}. تم تعطيل جميع بطاقات SIM.`
+          ? `Device ${device.NOM} activated. All SIM cards activated.` 
+          : `Device ${device.NOM} deactivated. All SIM cards deactivated.`
       );
     } catch (error: any) {
-      toast.error(`فشل تحديث الجهاز: ${error.message}`);
+      toast.error(`Failed to update device: ${error.message}`);
     }
   };
 
